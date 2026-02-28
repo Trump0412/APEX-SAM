@@ -1,0 +1,67 @@
+:root {
+  --bg: #f6f1e8;
+  --paper: #fffdf8;
+  --ink: #1d1d1b;
+  --muted: #6d6456;
+  --line: #d7c8b1;
+  --accent: #b84d1a;
+  --accent-2: #1b5e73;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  background: radial-gradient(circle at top, #fff7eb 0%, var(--bg) 48%, #efe5d7 100%);
+}
+.page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+.hero, .two-col { display: grid; gap: 24px; }
+.hero { grid-template-columns: 1.2fr 0.8fr; align-items: stretch; }
+.two-col { grid-template-columns: 1fr 1fr; }
+.card, .hero-slot {
+  background: rgba(255, 253, 248, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 28px;
+  box-shadow: 0 12px 40px rgba(71, 49, 21, 0.08);
+}
+.eyebrow { text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent-2); font-size: 12px; }
+h1 { font-size: clamp(42px, 8vw, 82px); margin: 0 0 12px; }
+h2 { margin-top: 0; font-size: 28px; }
+.subtitle { color: var(--muted); max-width: 52ch; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
+.actions a, .footer a {
+  text-decoration: none;
+  color: var(--paper);
+  background: linear-gradient(135deg, var(--accent), #d58533);
+  padding: 12px 18px;
+  border-radius: 999px;
+}
+.placeholder {
+  min-height: 160px;
+  border: 2px dashed var(--line);
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: repeating-linear-gradient(135deg, rgba(184, 77, 26, 0.05), rgba(184, 77, 26, 0.05) 12px, rgba(27, 94, 115, 0.04) 12px, rgba(27, 94, 115, 0.04) 24px);
+}
+.placeholder.large { min-height: 320px; }
+.placeholder.medium { min-height: 220px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 0 20px 40px;
+  color: var(--muted);
+}
+@media (max-width: 800px) {
+  .hero, .two-col { grid-template-columns: 1fr; }
+}

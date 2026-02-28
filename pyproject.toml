@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apex-sam"
+version = "0.1.0"
+description = "Minimal reproducibility release for APEX-SAM on CHAOS-MRI"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "torch",
+  "torchvision",
+  "opencv-python",
+  "scikit-image",
+  "scipy",
+  "SimpleITK",
+  "matplotlib",
+  "scikit-learn",
+]
+
+[project.scripts]
+apex-sam-build-db = "apex_sam.cli.build_local_db:main"
+apex-sam-eval = "apex_sam.cli.eval:main"
+
+[tool.setuptools.packages.find]
+include = ["apex_sam*"]

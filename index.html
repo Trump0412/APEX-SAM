@@ -6,681 +6,446 @@
   <title>APEX-SAM: Training-Free Cross-Domain Few-Shot Medical Image Segmentation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
   <style>
-    :root {
-      --bg: #0d1117;
-      --surface: #161b22;
-      --surface2: #1c2128;
-      --border: #30363d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #58a6ff;
-      --accent2: #3fb950;
-      --accent3: #f78166;
-      --accent4: #d2a8ff;
-      --gradient1: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%);
-      --gradient2: linear-gradient(135deg, #1a2f1a 0%, #0d1f0d 100%);
-      --card-shadow: 0 8px 32px rgba(0,0,0,0.4);
-      --radius: 12px;
+    body { font-family: 'Noto Sans', sans-serif; }
+    .publication-title { font-family: 'Google Sans', sans-serif; font-weight: 700; }
+    .publication-authors, .publication-venue { font-family: 'Google Sans', sans-serif; }
+    .title.is-3, .title.is-4 { font-family: 'Google Sans', sans-serif; }
+
+    .hero-body { padding-bottom: 2rem; }
+    .publication-title { font-size: 2.2rem; line-height: 1.3; }
+    .publication-authors { font-size: 1.1rem; }
+    .publication-authors a { color: hsl(204, 86%, 53%); }
+    .publication-authors a:hover { text-decoration: underline; }
+    .publication-venue { color: #555; font-size: 1rem; font-weight: 600; margin-top: 0.3rem; }
+
+    .publication-links .button {
+      margin: 4px;
+    }
+    .button.is-rounded.is-dark {
+      background-color: #363636;
+      border-radius: 9999px;
+    }
+    .button.is-rounded.is-dark:hover {
+      background-color: #2f2f2f;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    section.section { padding: 2.5rem 1.5rem; }
 
-    body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      overflow-x: hidden;
+    .content p { font-size: 1.05rem; line-height: 1.8; color: #363636; }
+    .content figure { margin: 1.5rem 0; }
+    .content figure img {
+      border-radius: 10px;
+      border: 1px solid #ddd;
     }
-
-    /* ── NAV ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(13,17,23,0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-    }
-    nav ul {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: flex;
-      gap: 0;
-      list-style: none;
-      align-items: center;
-      height: 52px;
-    }
-    nav ul li a {
-      display: block;
-      padding: 6px 14px;
-      color: var(--muted);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-      border-radius: 6px;
-      transition: color .2s, background .2s;
-    }
-    nav ul li a:hover { color: var(--text); background: var(--surface2); }
-    nav ul li:first-child { margin-right: auto; }
-    nav ul li:first-child a { color: var(--accent); font-weight: 600; font-size: 14px; }
-
-    /* ── HERO ── */
-    .hero {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 80px 24px 60px;
+    .content figure figcaption {
+      font-size: 0.9rem;
+      color: #666;
+      margin-top: 0.5rem;
       text-align: center;
     }
-    .venue-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(88,166,255,0.1);
-      border: 1px solid rgba(88,166,255,0.3);
-      color: var(--accent);
-      padding: 4px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 24px;
-    }
-    .hero h1 {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: clamp(28px, 5vw, 52px);
-      font-weight: 600;
-      line-height: 1.15;
-      margin-bottom: 16px;
-      background: linear-gradient(135deg, #e6edf3 30%, #58a6ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .hero-subtitle {
-      font-size: 16px;
-      color: var(--muted);
-      max-width: 680px;
-      margin: 0 auto 32px;
-    }
-    .authors {
-      font-size: 15px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-    .authors span { color: var(--text); font-weight: 500; }
-    .affil {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 32px;
-    }
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      margin-bottom: 56px;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: all .2s;
-      border: 1px solid transparent;
-    }
-    .btn-primary {
-      background: var(--accent);
-      color: #0d1117;
-    }
-    .btn-primary:hover { background: #79b8ff; }
-    .btn-outline {
-      background: transparent;
-      border-color: var(--border);
-      color: var(--text);
-    }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.05); }
 
-    /* ── TEASER ── */
-    .teaser {
-      max-width: 1100px;
-      margin: 0 auto 80px;
-      padding: 0 24px;
-    }
-    .teaser img {
-      width: 100%;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--card-shadow);
-    }
-    .teaser-caption {
-      text-align: center;
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 12px;
-    }
-
-    /* ── SECTION ── */
-    section {
-      max-width: 1100px;
-      margin: 0 auto 80px;
-      padding: 0 24px;
-    }
-    .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 8px;
-    }
-    h2 {
-      font-family: 'Source Serif 4', Georgia, serif;
-      font-size: clamp(22px, 3vw, 32px);
-      font-weight: 600;
-      margin-bottom: 20px;
-      color: var(--text);
-    }
-    p { color: #c9d1d9; font-size: 15px; line-height: 1.75; margin-bottom: 14px; }
-    p:last-child { margin-bottom: 0; }
-
-    /* ── ABSTRACT ── */
-    .abstract-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 36px 40px;
-      position: relative;
-      overflow: hidden;
-    }
-    .abstract-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--accent), var(--accent4));
-    }
-
-    /* ── HIGHLIGHTS ── */
-    .highlights {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-top: 32px;
-    }
-    .highlight-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      transition: border-color .2s, transform .2s;
-    }
-    .highlight-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .highlight-icon {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-    .highlight-card h3 {
-      font-size: 15px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-    .highlight-card p { font-size: 13px; color: var(--muted); margin: 0; }
-
-    /* ── METHOD ── */
-    .method-img {
-      width: 100%;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--card-shadow);
-      margin-bottom: 24px;
-    }
-    .method-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 24px;
-    }
+    /* Method cards */
     .method-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 1.5rem;
+      height: 100%;
+      border: 1px solid #eee;
     }
-    .method-card .tag {
+    .method-card .tag-label {
       display: inline-block;
-      font-size: 11px;
+      font-size: 0.75rem;
       font-weight: 700;
-      letter-spacing: .08em;
-      padding: 2px 8px;
+      letter-spacing: 0.05em;
+      padding: 2px 10px;
       border-radius: 4px;
-      margin-bottom: 10px;
+      margin-bottom: 0.75rem;
+      color: #fff;
     }
-    .tag-qar { background: rgba(88,166,255,0.15); color: var(--accent); }
-    .tag-apm { background: rgba(63,185,80,0.15); color: var(--accent2); }
-    .tag-hmf { background: rgba(210,168,255,0.15); color: var(--accent4); }
-    .method-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-    .method-card p { font-size: 13px; color: var(--muted); margin: 0; }
+    .tag-qar { background: #3273dc; }
+    .tag-apm { background: #23d160; }
+    .tag-hmf { background: #b86bff; }
+    .method-card h4 { font-family: 'Google Sans', sans-serif; font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .method-card p { font-size: 0.92rem; color: #555; line-height: 1.6; }
 
-    /* ── TABLES ── */
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      margin-bottom: 24px;
-    }
-    table {
+    /* Tables */
+    .results-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 0.88rem;
+      margin-bottom: 1rem;
     }
-    thead tr {
-      background: var(--surface2);
-    }
-    thead th {
-      padding: 12px 14px;
+    .results-table thead th {
+      background: #f8f9fa;
+      padding: 10px 12px;
       text-align: center;
       font-weight: 600;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
+      color: #555;
+      border-bottom: 2px solid #dee2e6;
       white-space: nowrap;
     }
-    thead th:first-child { text-align: left; }
-    tbody tr { border-bottom: 1px solid rgba(48,54,61,0.5); transition: background .15s; }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: var(--surface2); }
-    tbody td {
-      padding: 10px 14px;
+    .results-table thead th:first-child { text-align: left; }
+    .results-table tbody td {
+      padding: 8px 12px;
       text-align: center;
-      color: #c9d1d9;
+      border-bottom: 1px solid #eee;
+      color: #363636;
     }
-    tbody td:first-child { text-align: left; font-weight: 500; }
-    .best { font-weight: 700; color: var(--accent2); }
-    .second { text-decoration: underline; text-decoration-style: solid; }
-    .ours-row td { background: rgba(88,166,255,0.06); }
-    .ours-row td:first-child { color: var(--accent); font-weight: 700; }
-    .table-caption {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-      margin-bottom: 32px;
+    .results-table tbody td:first-child { text-align: left; font-weight: 500; }
+    .results-table tbody tr:hover { background: #f8f9fa; }
+    .best { font-weight: 700; color: #23d160; }
+    .second { text-decoration: underline; }
+    .ours-row { background: #eff8ff; }
+    .ours-row td:first-child { color: #3273dc; font-weight: 700; }
+
+    /* Highlights */
+    .highlight-box {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+      border: 1px solid #eee;
+    }
+    .highlight-box .big-num {
+      font-family: 'Google Sans', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #3273dc;
+    }
+    .highlight-box .label-text {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 0.25rem;
     }
 
-    /* ── FIGURES ── */
-    .fig-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 24px;
-    }
-    .fig-block img {
-      width: 100%;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--card-shadow);
-    }
-    .fig-block figcaption {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-      text-align: center;
-    }
-    .fig-full img {
-      width: 100%;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--card-shadow);
-    }
-    .fig-full figcaption {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-      text-align: center;
-    }
-
-    /* ── ABLATION ── */
-    .ablation-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      align-items: start;
-    }
-
-    /* ── CITATION ── */
-    .citation-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
+    /* Citation */
+    .citation-box {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 1.25rem;
       position: relative;
+      border: 1px solid #eee;
     }
-    .citation-block pre {
-      font-family: 'SFMono-Regular', Consolas, monospace;
-      font-size: 13px;
-      color: #c9d1d9;
+    .citation-box pre {
+      font-size: 0.85rem;
       white-space: pre-wrap;
       word-break: break-word;
-      margin: 0;
+      background: transparent;
+      padding: 0;
+      color: #363636;
     }
     .copy-btn {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 4px 10px;
+      top: 10px;
+      right: 10px;
+      background: #fff;
+      border: 1px solid #ddd;
+      color: #555;
+      padding: 4px 12px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 0.8rem;
       cursor: pointer;
-      transition: all .2s;
     }
-    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+    .copy-btn:hover { border-color: #3273dc; color: #3273dc; }
 
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 32px 24px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    /* ── DIVIDER ── */
-    .divider {
-      height: 1px;
-      background: var(--border);
-      max-width: 1100px;
-      margin: 0 auto 80px;
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .method-grid { grid-template-columns: 1fr; }
-      .fig-row { grid-template-columns: 1fr; }
-      .ablation-grid { grid-template-columns: 1fr; }
-      .abstract-card { padding: 24px 20px; }
-    }
-    @media (max-width: 600px) {
-      .hero { padding: 48px 16px 40px; }
-      section { padding: 0 16px; }
-    }
+    footer { padding: 2rem 0; }
+    footer a { color: hsl(204, 86%, 53%); }
   </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <ul>
-    <li><a href="#">APEX-SAM</a></li>
-    <li><a href="#abstract">Abstract</a></li>
-    <li><a href="#method">Method</a></li>
-    <li><a href="#results">Results</a></li>
-    <li><a href="#ablation">Ablation</a></li>
-    <li><a href="#citation">Citation</a></li>
-  </ul>
-</nav>
-
 <!-- HERO -->
-<div class="hero">
-  <div class="venue-badge"><i class="fas fa-star"></i> MICCAI 2026 Submission</div>
-  <h1>APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation</h1>
-  <p class="hero-subtitle">Training-free cross-domain few-shot medical image segmentation via quality-aware retrieval, geometry-guided alignment, and hybrid multi-modal prompt fusion.</p>
-  <p class="authors">
-    <span>Anonymous Authors</span>
-  </p>
-  <p class="affil">Anonymous Affiliations</p>
-  <div class="btn-row">
-    <a href="https://arxiv.org/abs/PLACEHOLDER" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Paper</a>
-    <a href="https://github.com/Trump0412/APEX-SAM" class="btn btn-outline"><i class="fab fa-github"></i> Code</a>
-    <a href="#results" class="btn btn-outline"><i class="fas fa-chart-bar"></i> Results</a>
-    <a href="#citation" class="btn btn-outline"><i class="fas fa-quote-right"></i> Cite</a>
-  </div>
-</div>
+<section class="hero is-light">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+      <p class="publication-venue">MICCAI 2026</p>
+      <h1 class="publication-title">
+        APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation
+      </h1>
+      <div class="publication-authors" style="margin-top:1rem;">
+        <span>Anonymous Authors</span>
+      </div>
+      <div class="publication-authors" style="margin-top:0.3rem;">
+        <span style="font-size:0.95rem;color:#888;">Anonymous Affiliations</span>
+      </div>
 
-<!-- TEASER / ARCH -->
-<div class="teaser">
-  <img src="assets/images/method/arch_3.png" alt="APEX-SAM Architecture Overview">
-  <p class="teaser-caption"><strong>Figure 1.</strong> Overview of APEX-SAM. QAR (left) builds a hierarchical expert bank with DINO/SigLIP dual-stream indexing. APM (middle) performs style alignment, semantic gating, orientation-aware geometric alignment, and anatomy-aware point sampling. HMF (right) fuses three SAM3 prompt branches via feature-consensus weighting.</p>
-</div>
-
-<!-- ABSTRACT -->
-<section id="abstract">
-  <div class="section-label">Abstract</div>
-  <div class="abstract-card">
-    <p>Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited.</p>
-    <p>We present <strong>APEX-SAM</strong>, a retrieval-augmented framework with three innovations. <strong>QAR</strong> builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. <strong>APM</strong> performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. <strong>HMF</strong> fuses three SAM branches (point, text, and box prompts) via training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm state-of-the-art performance among training-free methods, with ablations validating each component's contribution.</p>
-  </div>
-
-  <div class="highlights">
-    <div class="highlight-card">
-      <div class="highlight-icon">🏆</div>
-      <h3>State-of-the-Art</h3>
-      <p>Outperforms the strongest training-free baseline by <strong>+21.1 pp</strong> mean Dice across three cross-domain benchmarks.</p>
-    </div>
-    <div class="highlight-card">
-      <div class="highlight-icon">🔍</div>
-      <h3>Quality-Aware Retrieval</h3>
-      <p>Dual-stream DINO/SigLIP expert bank with diversity-aware scoring ensures high-quality, compatible support exemplars.</p>
-    </div>
-    <div class="highlight-card">
-      <div class="highlight-icon">🧬</div>
-      <h3>Anatomy-Guided Prompting</h3>
-      <p>Wavelet style normalization, semantic gating, and orientation-aware geometric alignment for robust cross-domain transfer.</p>
-    </div>
-    <div class="highlight-card">
-      <div class="highlight-icon">⚡</div>
-      <h3>Training-Free</h3>
-      <p>Zero gradient updates at inference. Immediate deployment on unseen anatomies without retraining or fine-tuning.</p>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- METHOD -->
-<section id="method">
-  <div class="section-label">Method</div>
-  <h2>APEX-SAM Framework</h2>
-  <p>APEX-SAM chains three principled modules — quality-aware retrieval, anatomy-aware prompt mining, and hybrid multi-modal fusion — into a single inference pipeline that exploits both data priors and foundation model capabilities without any parameter update.</p>
-
-  <div class="method-grid">
-    <div class="method-card">
-      <span class="tag tag-qar">QAR</span>
-      <h3>Quality-Aware Expert Retrieval</h3>
-      <p>Builds a hierarchical expert bank by clustering supports via DINO structural keys and greedily selecting entries using a quality-coverage-diversity score. Two-level retrieval routes queries to top-L clusters then re-ranks by multi-modal SigLIP similarity.</p>
-    </div>
-    <div class="method-card">
-      <span class="tag tag-apm">APM</span>
-      <h3>Anatomy-Aware Prompt Mining</h3>
-      <p>Applies Haar DWT style normalization to remove cross-modality intensity shift, semantic gating via DINO prototypes, orientation-aware directional Chamfer alignment, and Voronoi-based positive/negative point sampling from morphological priors.</p>
-    </div>
-    <div class="method-card">
-      <span class="tag tag-hmf">HMF</span>
-      <h3>Hybrid Multi-Modal Fusion</h3>
-      <p>Runs SAM3 with three independent branches: geometry-only points, anatomy text label, and bounding box. Fuses branches via reliability-weighted feature consensus — cosine agreement with per-pixel mean features — requiring no learned parameters.</p>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- DATASET VIS -->
-<section id="dataset">
-  <div class="section-label">Datasets</div>
-  <h2>Cross-Domain Benchmarks</h2>
-  <p>We evaluate on three cross-domain benchmarks: <strong>Abd-MRI</strong>, <strong>Abd-CT</strong>, and <strong>Card-MRI</strong>, under a 5-shot protocol with patient-level leave-one-out splits. The DINO-feature t-SNE below illustrates the significant cross-domain appearance variation that makes this task challenging.</p>
-  <figure class="fig-full">
-    <img src="assets/images/results/dataset_vis.png" alt="Dataset Visualization">
-    <figcaption><strong>Figure 2.</strong> Dataset visualization. Samples and DINO-feature t-SNE (one point per slice) for Abd-MRI, Abd-CT, and Card-MRI, illustrating cross-domain appearance variation.</figcaption>
-  </figure>
-</section>
-
-<div class="divider"></div>
-
-<!-- RESULTS -->
-<section id="results">
-  <div class="section-label">Results</div>
-  <h2>Quantitative Comparison</h2>
-  <p>APEX-SAM achieves consistent gains over all baselines on three benchmarks. Abdominal gains are larger because cross-modality appearance divergence (MRI vs. CT) degrades direct feature matching, while cardiac structures such as LV-MYO have thin, irregular morphology.</p>
-
-  <p><strong>Table 1.</strong> Quantitative comparison (Dice %) on Abd-MRI and Abd-CT. <span class="best">Bold</span> = best, <span class="second">underline</span> = second best.</p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Ref.</th>
-          <th colspan="5">Abd-MRI</th>
-          <th colspan="5">Abd-CT</th>
-        </tr>
-        <tr>
-          <th></th>
-          <th></th>
-          <th>Liver</th><th>LK</th><th>RK</th><th>Spleen</th><th>Mean</th>
-          <th>Liver</th><th>LK</th><th>RK</th><th>Spleen</th><th>Mean</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>PANet</td><td>ICCV'19</td><td>39.24</td><td>26.47</td><td>37.35</td><td>26.79</td><td>32.46</td><td>40.29</td><td>30.61</td><td>26.66</td><td>30.21</td><td>31.94</td></tr>
-        <tr><td>SSL-ALP</td><td>TMI'22</td><td>70.74</td><td>55.49</td><td>67.43</td><td>58.39</td><td>63.01</td><td>71.38</td><td>34.48</td><td>32.32</td><td>51.67</td><td>47.46</td></tr>
-        <tr><td>RPT</td><td>MICCAI'23</td><td>49.22</td><td>42.45</td><td>47.14</td><td>48.84</td><td>46.91</td><td>65.87</td><td>40.07</td><td>35.97</td><td>51.22</td><td>48.28</td></tr>
-        <tr><td>PATNet</td><td>ECCV'22</td><td>57.01</td><td>50.23</td><td>53.01</td><td>51.63</td><td>52.97</td><td>75.94</td><td>46.62</td><td>42.68</td><td>63.94</td><td>57.29</td></tr>
-        <tr><td>IFA</td><td>CVPR'24</td><td>50.22</td><td>35.99</td><td>34.00</td><td>42.21</td><td>40.61</td><td>46.62</td><td>25.13</td><td>26.56</td><td>24.85</td><td>30.79</td></tr>
-        <tr><td>FAMNet</td><td>AAAI'25</td><td>73.01</td><td>57.28</td><td>74.68</td><td>58.21</td><td>65.79</td><td>73.57</td><td>57.79</td><td>61.89</td><td>65.78</td><td><span class="second">64.75</span></td></tr>
-        <tr><td>MAUP</td><td>MICCAI'25</td><td><span class="second">78.16</span></td><td><span class="second">58.23</span></td><td><span class="second">72.34</span></td><td><span class="second">59.65</span></td><td><span class="second">67.09</span></td><td><span class="second">78.25</span></td><td><span class="second">59.41</span></td><td><span class="second">71.80</span></td><td><span class="second">60.38</span></td><td>67.46</td></tr>
-        <tr class="ours-row"><td>APEX-SAM (Ours)</td><td>—</td><td class="best">95.10</td><td class="best">96.88</td><td class="best">96.01</td><td class="best">95.23</td><td class="best">95.81</td><td class="best">93.47</td><td class="best">90.28</td><td class="best">91.83</td><td class="best">92.06</td><td class="best">91.91</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p><strong>Table 2.</strong> Quantitative comparison (Dice %) on Card-MRI.</p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Ref.</th>
-          <th>LV-BP</th>
-          <th>LV-MYO</th>
-          <th>RV</th>
-          <th>Mean</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>PANet</td><td>ICCV'19</td><td>51.42</td><td>25.75</td><td>25.75</td><td>36.66</td></tr>
-        <tr><td>SSL-ALP</td><td>TMI'22</td><td>83.47</td><td>22.73</td><td>66.21</td><td>57.47</td></tr>
-        <tr><td>RPT</td><td>MICCAI'23</td><td>60.84</td><td>42.28</td><td>57.30</td><td>53.47</td></tr>
-        <tr><td>PATNet</td><td>ECCV'22</td><td>65.35</td><td>50.63</td><td>68.34</td><td>61.44</td></tr>
-        <tr><td>IFA</td><td>CVPR'24</td><td>50.43</td><td>31.32</td><td>30.74</td><td>37.50</td></tr>
-        <tr><td>FAMNet</td><td>AAAI'25</td><td><span class="second">86.64</span></td><td><span class="second">51.82</span></td><td><span class="second">76.26</span></td><td><span class="second">71.58</span></td></tr>
-        <tr><td>MAUP</td><td>MICCAI'25</td><td>88.36</td><td>52.74</td><td>78.29</td><td>73.13</td></tr>
-        <tr class="ours-row"><td>APEX-SAM (Ours)</td><td>—</td><td class="best">92.75</td><td class="best">68.41</td><td class="best">88.23</td><td class="best">83.13</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- QUALITATIVE -->
-  <h2 style="margin-top:48px;">Qualitative Results &amp; Failure Analysis</h2>
-  <p>Successful cross-domain masks alongside representative failure modes: low-contrast boundaries (27%), severe shape shift (35%), retrieval mismatch (23%), and suboptimal prompts (15%).</p>
-  <figure class="fig-full">
-    <img src="assets/images/results/qual_failure.png" alt="Qualitative Results and Failure Cases">
-    <figcaption><strong>Figure 3.</strong> Qualitative and failure cases. Left: successful cross-domain masks. Right: representative failure modes with frequency breakdown.</figcaption>
-  </figure>
-</section>
-
-<div class="divider"></div>
-
-<!-- ABLATION -->
-<section id="ablation">
-  <div class="section-label">Ablation Study</div>
-  <h2>Component Analysis</h2>
-  <p>Module-wise gains: <strong>+7.8 pp</strong> for QAR, <strong>+6.1 pp</strong> for APM, <strong>+5.5 pp</strong> for HMF, and <strong>+4.0 pp</strong> from thresholded append-only memory update.</p>
-
-  <div class="ablation-grid">
-    <div>
-      <p><strong>Table 3.</strong> Ablation on core designs and memory update strategy (Dice %).</p>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Configuration</th>
-              <th>QAR</th>
-              <th>APM</th>
-              <th>HMF</th>
-              <th>Memory</th>
-              <th>Mean Dice</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Prompt-only baseline</td><td>✗</td><td>✗</td><td>✗</td><td>—</td><td>72.4</td></tr>
-            <tr><td>+ QAR</td><td>✓</td><td>✗</td><td>✗</td><td>Fixed</td><td>80.2</td></tr>
-            <tr><td>+ QAR + APM</td><td>✓</td><td>✓</td><td>✗</td><td>Fixed</td><td>86.3</td></tr>
-            <tr><td>+ QAR + APM + HMF</td><td>✓</td><td>✓</td><td>✓</td><td>Fixed</td><td>91.8</td></tr>
-            <tr class="ours-row"><td>Full (Ours)</td><td>✓</td><td>✓</td><td>✓</td><td>Thresholded</td><td class="best">95.81</td></tr>
-          </tbody>
-        </table>
+      <!-- Buttons -->
+      <div class="publication-links" style="margin-top:1.5rem;">
+        <a class="button is-normal is-rounded is-dark" href="https://arxiv.org/abs/PLACEHOLDER">
+          <span class="icon"><i class="fas fa-file-pdf"></i></span>
+          <span>Paper</span>
+        </a>
+        <a class="button is-normal is-rounded is-dark" href="https://github.com/Trump0412/APEX-SAM">
+          <span class="icon"><i class="fab fa-github"></i></span>
+          <span>Code</span>
+        </a>
+        <a class="button is-normal is-rounded is-dark" href="#results">
+          <span class="icon"><i class="fas fa-chart-bar"></i></span>
+          <span>Results</span>
+        </a>
+        <a class="button is-normal is-rounded is-dark" href="#citation">
+          <span class="icon"><i class="fas fa-quote-right"></i></span>
+          <span>Cite</span>
+        </a>
       </div>
     </div>
-    <div>
-      <p><strong>Figure 4.</strong> Hyperparameter sensitivity on Abd-MRI. Mean Dice (bars) and standard deviation (lines); each parameter swept independently. Red boxes mark selected values.</p>
+  </div>
+</section>
+
+<!-- TEASER -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <figure class="image">
+      <img src="assets/images/method/arch_3.png" alt="APEX-SAM Architecture" style="border-radius:10px;border:1px solid #ddd;">
+    </figure>
+    <p class="has-text-centered" style="font-size:0.9rem;color:#666;margin-top:0.75rem;">
+      <b>Figure 1.</b> Overview of APEX-SAM. QAR (left) builds a hierarchical expert bank with DINO/SigLIP dual-stream indexing. APM (middle) performs style alignment, semantic gating, orientation-aware geometric alignment, and anatomy-aware point sampling. HMF (right) fuses three SAM3 prompt branches via feature-consensus weighting.
+    </p>
+  </div>
+</section>
+
+<!-- ABSTRACT -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Abstract</h2>
+    <div class="content">
+      <p>
+        Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited.
+      </p>
+      <p>
+        We present <b>APEX-SAM</b>, a retrieval-augmented framework with three innovations. <b>QAR</b> builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. <b>APM</b> performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. <b>HMF</b> fuses three SAM branches (point, text, and box prompts) via training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm state-of-the-art performance among training-free methods, with ablations validating each component's contribution.
+      </p>
+    </div>
+
+    <!-- Highlight numbers -->
+    <div class="columns is-multiline" style="margin-top:1.5rem;">
+      <div class="column is-3">
+        <div class="highlight-box">
+          <div class="big-num">+21.1</div>
+          <div class="label-text">pp Mean Dice Gain</div>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="highlight-box">
+          <div class="big-num">95.81</div>
+          <div class="label-text">Dice on Abd-MRI</div>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="highlight-box">
+          <div class="big-num">91.91</div>
+          <div class="label-text">Dice on Abd-CT</div>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="highlight-box">
+          <div class="big-num">83.13</div>
+          <div class="label-text">Dice on Card-MRI</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- METHOD -->
+<section class="section" style="background:#fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Method</h2>
+    <div class="content">
+      <p>APEX-SAM chains three principled modules &mdash; quality-aware retrieval, anatomy-aware prompt mining, and hybrid multi-modal fusion &mdash; into a single inference pipeline that exploits both data priors and foundation model capabilities without any parameter update.</p>
+    </div>
+    <div class="columns">
+      <div class="column is-4">
+        <div class="method-card">
+          <span class="tag-label tag-qar">QAR</span>
+          <h4>Quality-Aware Expert Retrieval</h4>
+          <p>Builds a hierarchical expert bank by clustering supports via DINO structural keys and greedily selecting entries using a quality-coverage-diversity score. Two-level retrieval routes queries to top-L clusters then re-ranks by multi-modal SigLIP similarity.</p>
+        </div>
+      </div>
+      <div class="column is-4">
+        <div class="method-card">
+          <span class="tag-label tag-apm">APM</span>
+          <h4>Anatomy-Aware Prompt Mining</h4>
+          <p>Applies Haar DWT style normalization to remove cross-modality intensity shift, semantic gating via DINO prototypes, orientation-aware directional Chamfer alignment, and Voronoi-based positive/negative point sampling from morphological priors.</p>
+        </div>
+      </div>
+      <div class="column is-4">
+        <div class="method-card">
+          <span class="tag-label tag-hmf">HMF</span>
+          <h4>Hybrid Multi-Modal Fusion</h4>
+          <p>Runs SAM3 with three independent branches: geometry-only points, anatomy text label, and bounding box. Fuses branches via reliability-weighted feature consensus &mdash; cosine agreement with per-pixel mean features &mdash; requiring no learned parameters.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATASET -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Datasets</h2>
+    <div class="content">
+      <p>We evaluate on three cross-domain benchmarks: <b>Abd-MRI</b>, <b>Abd-CT</b>, and <b>Card-MRI</b>, under a 5-shot protocol with patient-level leave-one-out splits.</p>
       <figure>
-        <img src="assets/images/charts/parameter.png" alt="Hyperparameter Sensitivity" style="width:100%;border-radius:12px;border:1px solid var(--border);box-shadow:var(--card-shadow);">
+        <img src="assets/images/results/dataset_vis.png" alt="Dataset Visualization">
+        <figcaption><b>Figure 2.</b> Dataset visualization. Samples and DINO-feature t-SNE (one point per slice) for Abd-MRI, Abd-CT, and Card-MRI, illustrating cross-domain appearance variation.</figcaption>
       </figure>
     </div>
   </div>
 </section>
 
-<div class="divider"></div>
+<!-- RESULTS -->
+<section class="section" id="results" style="background:#fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Results</h2>
+    <div class="content">
+      <p>APEX-SAM achieves consistent gains over all baselines on three benchmarks. Abdominal gains are larger because cross-modality appearance divergence (MRI vs. CT) degrades direct feature matching.</p>
+    </div>
 
-<!-- CITATION -->
-<section id="citation">
-  <div class="section-label">Citation</div>
-  <h2>BibTeX</h2>
-  <p>If you find APEX-SAM useful in your research, please consider citing:</p>
-  <div class="citation-block">
-    <button class="copy-btn" onclick="copyBib()">Copy</button>
-    <pre id="bib">@inproceedings{apexsam2026,
-  title     = {APEX-SAM: Anatomy-aware Prompting with Expert Retrieval
-               for Training-free Medical Image Segmentation},
-  author    = {Anonymous Authors},
-  booktitle = {Medical Image Computing and Computer Assisted Intervention
-               (MICCAI)},
-  year      = {2026},
-}</pre>
+    <!-- Table 1 -->
+    <h3 class="title is-4" style="margin-top:1.5rem;">Table 1. Abd-MRI &amp; Abd-CT (Dice %)</h3>
+    <div style="overflow-x:auto;">
+      <table class="results-table">
+        <thead>
+          <tr><th>Method</th><th>Ref.</th><th>Liver</th><th>LK</th><th>RK</th><th>Spleen</th><th>Mean</th><th>Liver</th><th>LK</th><th>RK</th><th>Spleen</th><th>Mean</th></tr>
+          <tr><th></th><th></th><th colspan="5" style="text-align:center;font-size:0.8rem;color:#888;border-bottom:1px solid #dee2e6;">Abd-MRI</th><th colspan="5" style="text-align:center;font-size:0.8rem;color:#888;border-bottom:1px solid #dee2e6;">Abd-CT</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>PANet</td><td>ICCV'19</td><td>39.24</td><td>26.47</td><td>37.35</td><td>26.79</td><td>32.46</td><td>40.29</td><td>30.61</td><td>26.66</td><td>30.21</td><td>31.94</td></tr>
+          <tr><td>SSL-ALP</td><td>TMI'22</td><td>70.74</td><td>55.49</td><td>67.43</td><td>58.39</td><td>63.01</td><td>71.38</td><td>34.48</td><td>32.32</td><td>51.67</td><td>47.46</td></tr>
+          <tr><td>RPT</td><td>MICCAI'23</td><td>49.22</td><td>42.45</td><td>47.14</td><td>48.84</td><td>46.91</td><td>65.87</td><td>40.07</td><td>35.97</td><td>51.22</td><td>48.28</td></tr>
+          <tr><td>PATNet</td><td>ECCV'22</td><td>57.01</td><td>50.23</td><td>53.01</td><td>51.63</td><td>52.97</td><td>75.94</td><td>46.62</td><td>42.68</td><td>63.94</td><td>57.29</td></tr>
+          <tr><td>IFA</td><td>CVPR'24</td><td>50.22</td><td>35.99</td><td>34.00</td><td>42.21</td><td>40.61</td><td>46.62</td><td>25.13</td><td>26.56</td><td>24.85</td><td>30.79</td></tr>
+          <tr><td>FAMNet</td><td>AAAI'25</td><td>73.01</td><td>57.28</td><td>74.68</td><td>58.21</td><td>65.79</td><td>73.57</td><td>57.79</td><td>61.89</td><td>65.78</td><td><span class="second">64.75</span></td></tr>
+          <tr><td>MAUP</td><td>MICCAI'25</td><td><span class="second">78.16</span></td><td><span class="second">58.23</span></td><td><span class="second">72.34</span></td><td><span class="second">59.65</span></td><td><span class="second">67.09</span></td><td><span class="second">78.25</span></td><td><span class="second">59.41</span></td><td><span class="second">71.80</span></td><td><span class="second">60.38</span></td><td>67.46</td></tr>
+          <tr class="ours-row"><td>APEX-SAM (Ours)</td><td>&mdash;</td><td class="best">95.10</td><td class="best">96.88</td><td class="best">96.01</td><td class="best">95.23</td><td class="best">95.81</td><td class="best">93.47</td><td class="best">90.28</td><td class="best">91.83</td><td class="best">92.06</td><td class="best">91.91</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Table 2 -->
+    <h3 class="title is-4" style="margin-top:2rem;">Table 2. Card-MRI (Dice %)</h3>
+    <div style="overflow-x:auto;">
+      <table class="results-table">
+        <thead>
+          <tr><th>Method</th><th>Ref.</th><th>LV-BP</th><th>LV-MYO</th><th>RV</th><th>Mean</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>PANet</td><td>ICCV'19</td><td>51.42</td><td>25.75</td><td>25.75</td><td>36.66</td></tr>
+          <tr><td>SSL-ALP</td><td>TMI'22</td><td>83.47</td><td>22.73</td><td>66.21</td><td>57.47</td></tr>
+          <tr><td>RPT</td><td>MICCAI'23</td><td>60.84</td><td>42.28</td><td>57.30</td><td>53.47</td></tr>
+          <tr><td>PATNet</td><td>ECCV'22</td><td>65.35</td><td>50.63</td><td>68.34</td><td>61.44</td></tr>
+          <tr><td>IFA</td><td>CVPR'24</td><td>50.43</td><td>31.32</td><td>30.74</td><td>37.50</td></tr>
+          <tr><td>FAMNet</td><td>AAAI'25</td><td><span class="second">86.64</span></td><td><span class="second">51.82</span></td><td><span class="second">76.26</span></td><td><span class="second">71.58</span></td></tr>
+          <tr><td>MAUP</td><td>MICCAI'25</td><td>88.36</td><td>52.74</td><td>78.29</td><td>73.13</td></tr>
+          <tr class="ours-row"><td>APEX-SAM (Ours)</td><td>&mdash;</td><td class="best">92.75</td><td class="best">68.41</td><td class="best">88.23</td><td class="best">83.13</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 
-<footer>
-  <p>APEX-SAM &nbsp;·&nbsp; MICCAI 2026 &nbsp;·&nbsp; <a href="https://github.com/Trump0412/APEX-SAM">GitHub</a></p>
-  <p style="margin-top:8px;">Page template inspired by <a href="https://nerfies.github.io">Nerfies</a> and <a href="https://trump0412.github.io/HyperGaussian/">HyperGaussian</a>.</p>
+<!-- QUALITATIVE -->
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Qualitative Results</h2>
+    <div class="content">
+      <p>Successful cross-domain masks alongside representative failure modes: low-contrast boundaries (27%), severe shape shift (35%), retrieval mismatch (23%), and suboptimal prompts (15%).</p>
+      <figure>
+        <img src="assets/images/results/qual_failure.png" alt="Qualitative Results and Failure Cases">
+        <figcaption><b>Figure 3.</b> Left: successful cross-domain masks. Right: representative failure modes with frequency breakdown.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ABLATION -->
+<section class="section" id="ablation" style="background:#fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Ablation Study</h2>
+    <div class="content">
+      <p>Module-wise gains: <b>+7.8 pp</b> for QAR, <b>+6.1 pp</b> for APM, <b>+5.5 pp</b> for HMF, and <b>+4.0 pp</b> from thresholded append-only memory update.</p>
+    </div>
+
+    <div class="columns">
+      <div class="column is-7">
+        <h3 class="title is-4">Table 3. Ablation (Dice %)</h3>
+        <div style="overflow-x:auto;">
+          <table class="results-table">
+            <thead>
+              <tr><th>Configuration</th><th>QAR</th><th>APM</th><th>HMF</th><th>Memory</th><th>Mean Dice</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Prompt-only baseline</td><td>&cross;</td><td>&cross;</td><td>&cross;</td><td>&mdash;</td><td>72.4</td></tr>
+              <tr><td>+ QAR</td><td>&check;</td><td>&cross;</td><td>&cross;</td><td>Fixed</td><td>80.2</td></tr>
+              <tr><td>+ QAR + APM</td><td>&check;</td><td>&check;</td><td>&cross;</td><td>Fixed</td><td>86.3</td></tr>
+              <tr><td>+ QAR + APM + HMF</td><td>&check;</td><td>&check;</td><td>&check;</td><td>Fixed</td><td>91.8</td></tr>
+              <tr class="ours-row"><td>Full (Ours)</td><td>&check;</td><td>&check;</td><td>&check;</td><td>Thresholded</td><td class="best">95.81</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="column is-5">
+        <h3 class="title is-4">Figure 4. Hyperparameter Sensitivity</h3>
+        <figure>
+          <img src="assets/images/charts/parameter.png" alt="Hyperparameter Sensitivity" style="border-radius:10px;border:1px solid #ddd;width:100%;">
+          <figcaption style="font-size:0.85rem;color:#666;margin-top:0.5rem;text-align:center;">Mean Dice (bars) and std (lines) on Abd-MRI. Red boxes mark selected values.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CITATION -->
+<section class="section" id="citation">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">BibTeX</h2>
+    <div class="content">
+      <p>If you find APEX-SAM useful in your research, please consider citing:</p>
+    </div>
+    <div class="citation-box">
+      <button class="copy-btn" onclick="copyBib()">Copy</button>
+      <pre id="bib">@inproceedings{apexsam2026,
+  title     = {APEX-SAM: Anatomy-aware Prompting with Expert Retrieval
+               for Training-free Medical Image Segmentation},
+  author    = {Anonymous Authors},
+  booktitle = {Medical Image Computing and Computer Assisted
+               Intervention (MICCAI)},
+  year      = {2026},
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" style="padding:2rem 1.5rem;">
+  <div class="container is-max-desktop has-text-centered">
+    <p style="font-size:0.9rem;color:#888;">
+      APEX-SAM &middot; MICCAI 2026 &middot; <a href="https://github.com/Trump0412/APEX-SAM">GitHub</a>
+    </p>
+    <p style="font-size:0.8rem;color:#aaa;margin-top:0.5rem;">
+      Page template inspired by <a href="https://nerfies.github.io">Nerfies</a>.
+    </p>
+  </div>
 </footer>
 
 <script>
 function copyBib() {
-  const text = document.getElementById('bib').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.copy-btn');
+  var text = document.getElementById('bib').textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    var btn = document.querySelector('.copy-btn');
     btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 2000);
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
   });
 }
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const target = document.querySelector(a.getAttribute('href'));
+document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    var target = document.querySelector(a.getAttribute('href'));
     if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
   });
 });

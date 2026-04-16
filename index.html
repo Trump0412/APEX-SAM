@@ -29,9 +29,14 @@
     .button.is-rounded.is-dark {
       background-color: #363636;
       border-radius: 9999px;
+      border: 1px solid rgba(148,163,184,0.2);
+      box-shadow: 0 4px 12px rgba(15,23,42,0.08);
+      transition: transform 0.15s, box-shadow 0.15s;
     }
     .button.is-rounded.is-dark:hover {
       background-color: #2f2f2f;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(15,23,42,0.12);
     }
 
     section.section { padding: 2.5rem 1.5rem; }
@@ -39,8 +44,9 @@
     .content p { font-size: 1.05rem; line-height: 1.8; color: #363636; }
     .content figure { margin: 1.5rem 0; }
     .content figure img {
-      border-radius: 10px;
-      border: 1px solid #c5d3e8;
+      border-radius: 14px;
+      border: 1px solid rgba(148,163,184,0.18);
+      box-shadow: 0 12px 28px rgba(15,23,42,0.07), 0 2px 6px rgba(15,23,42,0.04);
     }
     .content figure figcaption {
       font-size: 0.9rem;
@@ -51,11 +57,17 @@
 
     /* Method cards */
     .method-card {
-      background: rgba(255,255,255,0.85);
-      border-radius: 10px;
+      background: rgba(255,255,255,0.88);
+      border-radius: 16px;
       padding: 1.5rem;
       height: 100%;
-      border: 1px solid #d0daea;
+      border: 1px solid rgba(148,163,184,0.2);
+      box-shadow: 0 12px 28px rgba(15,23,42,0.07), 0 2px 6px rgba(15,23,42,0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .method-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 40px rgba(15,23,42,0.10), 0 4px 10px rgba(15,23,42,0.06);
     }
     .method-card .tag-label {
       display: inline-block;
@@ -79,6 +91,10 @@
       border-collapse: collapse;
       font-size: 0.88rem;
       margin-bottom: 1rem;
+      background: rgba(255,255,255,0.92);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(15,23,42,0.07), 0 2px 6px rgba(15,23,42,0.04);
     }
     .results-table thead th {
       background: #e4ecf7;
@@ -105,11 +121,17 @@
 
     /* Highlights */
     .highlight-box {
-      background: rgba(255,255,255,0.85);
-      border-radius: 10px;
+      background: rgba(255,255,255,0.88);
+      border-radius: 16px;
       padding: 1.25rem;
       text-align: center;
-      border: 1px solid #d0daea;
+      border: 1px solid rgba(148,163,184,0.2);
+      box-shadow: 0 12px 28px rgba(15,23,42,0.07), 0 2px 6px rgba(15,23,42,0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .highlight-box:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 36px rgba(15,23,42,0.10), 0 4px 10px rgba(15,23,42,0.06);
     }
     .highlight-box .big-num {
       font-family: 'Google Sans', sans-serif;
@@ -125,11 +147,12 @@
 
     /* Citation */
     .citation-box {
-      background: rgba(255,255,255,0.85);
-      border-radius: 10px;
+      background: rgba(255,255,255,0.88);
+      border-radius: 16px;
       padding: 1.25rem;
       position: relative;
-      border: 1px solid #d0daea;
+      border: 1px solid rgba(148,163,184,0.2);
+      box-shadow: 0 12px 28px rgba(15,23,42,0.07), 0 2px 6px rgba(15,23,42,0.04);
     }
     .citation-box pre {
       font-size: 0.85rem;
@@ -201,7 +224,7 @@
 <section class="section">
   <div class="container is-max-desktop">
     <figure class="image">
-      <img src="assets/images/method/arch_3.png" alt="APEX-SAM Architecture" style="border-radius:10px;border:1px solid #c5d3e8;">
+      <img src="assets/images/method/arch_3.png" alt="APEX-SAM Architecture" style="border-radius:14px;border:1px solid rgba(148,163,184,0.18);box-shadow:0 12px 28px rgba(15,23,42,0.07),0 2px 6px rgba(15,23,42,0.04);">
     </figure>
     <p class="has-text-centered" style="font-size:0.9rem;color:#666;margin-top:0.75rem;">
       <b>Figure 1.</b> Overview of APEX-SAM. QAR (left) builds a hierarchical expert bank with DINO/SigLIP dual-stream indexing. APM (middle) performs style alignment, semantic gating, orientation-aware geometric alignment, and anatomy-aware point sampling. HMF (right) fuses three SAM3 prompt branches via feature-consensus weighting.
@@ -393,7 +416,7 @@
       <div class="column is-5">
         <h3 class="title is-4">Figure 4. Hyperparameter Sensitivity</h3>
         <figure>
-          <img src="assets/images/charts/parameter.png" alt="Hyperparameter Sensitivity" style="border-radius:10px;border:1px solid #c5d3e8;width:100%;">
+          <img src="assets/images/charts/parameter.png" alt="Hyperparameter Sensitivity" style="border-radius:14px;border:1px solid rgba(148,163,184,0.18);box-shadow:0 12px 28px rgba(15,23,42,0.07),0 2px 6px rgba(15,23,42,0.04);width:100%;">
           <figcaption style="font-size:0.85rem;color:#666;margin-top:0.5rem;text-align:center;">Mean Dice (bars) and std (lines) on Abd-MRI. Red boxes mark selected values.</figcaption>
         </figure>
       </div>

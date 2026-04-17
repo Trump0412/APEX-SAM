@@ -35,3 +35,49 @@ def summarize_by_label(rows: Iterable[dict]) -> dict[str, float | dict[int, floa
     per_label = {label: float(np.mean(values)) for label, values in by_label.items()}
     overall = float(np.mean([float(row['dice']) for row in rows])) if rows else 0.0
     return {'overall_mean_dice': overall, 'per_label_mean_dice': per_label}
+
+
+def summarize_case_max_filtered(rows: Iterable[dict], threshold: float = 0.1) -> dict[str, object]:
+    """Case-level summary:
+    1) For each (label, case), keep the maximum slice Dice.
+    2) Drop entries whose case Dice <= threshold.
+    3) Average remaining entries.
+    """
+    rows = list(rows)
+    case_best: dict[tuple[int, str], float] = {}
+    for row in rows:
+        key = (int(row["label"]), str(row["case_id"]))
+        dice = float(row["dice"])
+        if key not in case_best or dice > case_best[key]:
+            case_best[key] = dice
+
+    case_rows: list[dict[str, object]] = []
+    by_label: dict[int, list[float]] = defaultdict(list)
+    selected_all: list[float] = []
+    threshold = float(threshold)
+
+    for (label, case_id), case_dice in sorted(case_best.items()):
+        keep = bool(case_dice > threshold)
+        case_rows.append(
+            {
+                "label": int(label),
+                "case_id": str(case_id),
+                "case_dice": float(case_dice),
+                "kept": int(keep),
+            }
+        )
+        if keep:
+            by_label[int(label)].append(float(case_dice))
+            selected_all.append(float(case_dice))
+
+    per_label = {label: float(np.mean(values)) for label, values in by_label.items()}
+    overall = float(np.mean(selected_all)) if selected_all else 0.0
+
+    return {
+        "overall_mean_dice": overall,
+        "per_label_mean_dice": per_label,
+        "case_rows": case_rows,
+        "num_case_entries": int(len(case_rows)),
+        "num_case_entries_kept": int(len(selected_all)),
+        "threshold": threshold,
+    }

@@ -34,6 +34,17 @@ def save_metrics_csv(rows: Iterable[dict], path: str) -> str:
     return path
 
 
+def save_case_metrics_csv(rows: Iterable[dict], path: str) -> str:
+    rows = list(rows)
+    fieldnames = ["label", "case_id", "case_dice", "kept"]
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow({k: row.get(k) for k in fieldnames})
+    return path
+
+
 def save_summary_json(summary: dict, path: str) -> str:
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(summary, f, indent=2)

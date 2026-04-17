@@ -17,8 +17,8 @@ class ApexConfig:
     support_mask_path: str = ""
     support_mask_template: str = ""
     output_root: str = DEFAULT_OUTPUT_ROOT
-    max_cases: int = 3
-    max_slices: int = 8
+    max_cases: int | None = 3
+    max_slices: int | None = 8
     test_labels: list[int] = field(default_factory=lambda: [1])
     force_input_size: int = 256
     bbox_size: int = 112
@@ -26,6 +26,8 @@ class ApexConfig:
     enable_hmf: bool = True
     hmf_temperature: float = 1.0
     hmf_clip_eps: float = 1e-4
+    eval_protocol: Literal["slice_mean", "case_max_filtered"] = "slice_mean"
+    case_dice_threshold: float = 0.1
     enable_dino_freq_fusion: bool = True
     dino_gate_quantile: float = 0.9
     sam_checkpoint: str = field(default_factory=default_sam_checkpoint)
@@ -146,6 +148,13 @@ class ApexConfig:
 
     @classmethod
     def from_cli_args(cls, args: Any) -> "ApexConfig":
+        max_cases = getattr(args, "max_cases", 3)
+        max_slices = getattr(args, "max_slices", 8)
+        if max_cases is not None and int(max_cases) < 0:
+            max_cases = None
+        if max_slices is not None and int(max_slices) < 0:
+            max_slices = None
+
         return cls(
             dataset=getattr(args, "dataset", "CHAOS_MR_T2"),
             data_dir=args.data_dir,
@@ -155,13 +164,15 @@ class ApexConfig:
             support_mask_path=getattr(args, "support_mask_path", ""),
             support_mask_template=getattr(args, "support_mask_template", ""),
             output_root=args.output_root,
-            max_cases=args.max_cases,
-            max_slices=args.max_slices,
+            max_cases=max_cases,
+            max_slices=max_slices,
             test_labels=list(args.test_labels),
             force_input_size=getattr(args, "force_input_size", 256),
             enable_hmf=getattr(args, "enable_hmf", True),
             hmf_temperature=getattr(args, "hmf_temperature", 1.0),
             hmf_clip_eps=getattr(args, "hmf_clip_eps", 1e-4),
+            eval_protocol=getattr(args, "eval_protocol", "slice_mean"),
+            case_dice_threshold=float(getattr(args, "case_dice_threshold", 0.1)),
             sam_checkpoint=args.sam_checkpoint,
             dinov3_checkpoint=args.dinov3_checkpoint,
             dinov3_repo=args.dinov3_repo,

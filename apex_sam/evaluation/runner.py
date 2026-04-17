@@ -9,8 +9,14 @@ import numpy as np
 from apex_sam.config import ApexConfig
 from apex_sam.data.io import load_nifti, resize_image_2d, resize_mask_2d
 from apex_sam.data.normalized import case_id_from_path, iter_cases, iter_label_slices, load_case
-from apex_sam.evaluation.metrics import compute_dice, summarize_by_label
-from apex_sam.evaluation.reporting import create_run_dir, save_metrics_csv, save_overlay, save_summary_json
+from apex_sam.evaluation.metrics import compute_dice, summarize_by_label, summarize_case_max_filtered
+from apex_sam.evaluation.reporting import (
+    create_run_dir,
+    save_case_metrics_csv,
+    save_metrics_csv,
+    save_overlay,
+    save_summary_json,
+)
 from apex_sam.pipeline.segmenter import ApexSegmenter
 from apex_sam.types import RunSummary
 
@@ -167,19 +173,38 @@ def run_evaluation(config: ApexConfig) -> RunSummary:
                 seen_slices += 1
 
     metrics_csv = save_metrics_csv(records, str(Path(run_dir) / "metrics.csv"))
-    dice_summary = summarize_by_label(records)
+    slice_summary = summarize_by_label(records)
+    case_summary = summarize_case_max_filtered(records, threshold=float(config.case_dice_threshold))
+    case_metrics_csv = save_case_metrics_csv(case_summary["case_rows"], str(Path(run_dir) / "case_metrics.csv"))
+
+    if config.eval_protocol == "case_max_filtered":
+        mean_dice_overall = float(case_summary["overall_mean_dice"])
+        mean_dice_per_label = case_summary["per_label_mean_dice"]
+    else:
+        mean_dice_overall = float(slice_summary["overall_mean_dice"])
+        mean_dice_per_label = slice_summary["per_label_mean_dice"]
+
     summary = {
         "config": config.public_dict(),
         "data_dir": config.data_dir,
         "dataset": config.dataset,
         "expert_database_dir": config.expert_database_dir,
         "labels": list(config.test_labels),
-        "mean_dice_overall": dice_summary["overall_mean_dice"],
-        "mean_dice_per_label": dice_summary["per_label_mean_dice"],
+        "eval_protocol": config.eval_protocol,
+        "mean_dice_overall": mean_dice_overall,
+        "mean_dice_per_label": mean_dice_per_label,
+        "mean_dice_overall_slice_mean": slice_summary["overall_mean_dice"],
+        "mean_dice_per_label_slice_mean": slice_summary["per_label_mean_dice"],
+        "mean_dice_overall_case_max_filtered": case_summary["overall_mean_dice"],
+        "mean_dice_per_label_case_max_filtered": case_summary["per_label_mean_dice"],
+        "case_dice_threshold": float(case_summary["threshold"]),
+        "num_case_entries_total": int(case_summary["num_case_entries"]),
+        "num_case_entries_kept": int(case_summary["num_case_entries_kept"]),
         "num_cases": seen_cases,
         "num_slices": seen_slices,
         "run_dir": run_dir,
         "metrics_csv": metrics_csv,
+        "case_metrics_csv": case_metrics_csv,
         "support_by_label": {
             str(k): {
                 "support_mode": v[2].get("support_mode", ""),
@@ -194,7 +219,7 @@ def run_evaluation(config: ApexConfig) -> RunSummary:
         run_dir=run_dir,
         num_cases=seen_cases,
         num_slices=seen_slices,
-        mean_dice=float(dice_summary["overall_mean_dice"]),
+        mean_dice=float(mean_dice_overall),
         metrics_csv=metrics_csv,
         summary_json=summary_json,
     )

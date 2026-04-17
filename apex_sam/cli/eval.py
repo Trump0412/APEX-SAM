@@ -30,10 +30,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument("--output-root", default=DEFAULT_OUTPUT_ROOT)
-    parser.add_argument("--max-cases", type=int, default=3)
-    parser.add_argument("--max-slices", type=int, default=8)
+    parser.add_argument("--max-cases", type=int, default=3, help="Use -1 for all cases.")
+    parser.add_argument("--max-slices", type=int, default=8, help="Use -1 for all valid slices.")
     parser.add_argument("--test-labels", type=int, nargs="*", default=[1])
     parser.add_argument("--force-input-size", type=int, default=256)
+    parser.add_argument(
+        "--eval-protocol",
+        choices=["slice_mean", "case_max_filtered"],
+        default="slice_mean",
+        help="Evaluation aggregation protocol.",
+    )
+    parser.add_argument(
+        "--case-dice-threshold",
+        type=float,
+        default=0.1,
+        help="Dice threshold used when eval-protocol=case_max_filtered.",
+    )
 
     parser.add_argument("--enable-hmf", action="store_true", default=True)
     parser.add_argument("--disable-hmf", dest="enable_hmf", action="store_false")

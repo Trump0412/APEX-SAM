@@ -67,15 +67,12 @@ To protect medical data privacy, this repository does not include the private ex
 What is released:
 
 - **Module-2 (APM)**: open-source implementation.
-- **Module-3 (HMF)**: open-source **vanilla bbox + point** implementation (same parameter setup as paper experiments).
+- **Module-3 (HMF)**: open-source **vanilla bbox + point** implementation.
 - **Inference/Eval path**: accepts one externally selected support pair.
 
 What is placeholder-only:
 
-- **Module-1 (QAR expert database + DINOv3 rk2 retrieval)** is kept as file-level placeholders only.
-- Placeholder files are intentionally empty:
-  - `apex_sam/module1_qar/build_expert_database.py`
-  - `apex_sam/module1_qar/retrieve_support_rank2.py`
+- **Module-1** is kept as file-level placeholders only.
 
 You can build your own Module-1 with DINOv3 + SigLIP and place assets under `expert_database/`, then pass the selected support to this open-source inference pipeline.
 
@@ -215,6 +212,24 @@ python -m apex_sam.cli.inference \
   --device cuda
 ```
 
+Full-set inference after Module-1 is configured:
+
+```bash
+python -m apex_sam.cli.eval \
+  --dataset CHAOS_MR_T2 \
+  --data-dir /path/to/CHAOS_MR_T2_preprocessed \
+  --expert-database-dir /path/to/expert_database \
+  --support-item-dir /path/to/support_item \
+  --test-labels 1 2 3 4 \
+  --max-cases -1 \
+  --max-slices -1 \
+  --sam-checkpoint $APEX_SAM_CHECKPOINT \
+  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
+  --dinov3-repo $APEX_DINO_REPO \
+  --output-root ./outputs \
+  --device cuda
+```
+
 ## Eval
 
 Evaluate on a normalized dataset using externally selected support:
@@ -228,6 +243,26 @@ python -m apex_sam.cli.eval \
   --test-labels 1 2 3 4 \
   --max-cases 3 \
   --max-slices 8 \
+  --sam-checkpoint $APEX_SAM_CHECKPOINT \
+  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
+  --dinov3-repo $APEX_DINO_REPO \
+  --output-root ./outputs \
+  --device cuda
+```
+
+Full-set test command after Module-1 is implemented and configured:
+
+```bash
+python -m apex_sam.cli.eval \
+  --dataset CHAOS_MR_T2 \
+  --data-dir /path/to/CHAOS_MR_T2_preprocessed \
+  --expert-database-dir /path/to/expert_database \
+  --support-item-dir /path/to/support_item \
+  --test-labels 1 2 3 4 \
+  --max-cases -1 \
+  --max-slices -1 \
+  --eval-protocol case_max_filtered \
+  --case-dice-threshold 0.1 \
   --sam-checkpoint $APEX_SAM_CHECKPOINT \
   --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
   --dinov3-repo $APEX_DINO_REPO \

@@ -7,3 +7,4 @@ def test_config_defaults():
     assert cfg.enable_dino_freq_fusion is True
     assert not hasattr(cfg, 'disable_freq_style')
     assert cfg.force_input_size == 256
+    assert cfg.eval_protocol == "slice_mean"

@@ -1,11 +1,11 @@
 dataset: CHAOS_MR_T2
 data_dir: /path/to/CHAOS_MR_T2_preprocessed
-local_db_path: /path/to/CHAOS_MR_T2_local_dinov3_db.npz
+expert_database_dir: /path/to/expert_database
+support_item_dir: /path/to/support_item
 output_root: ./outputs
 max_cases: 3
 max_slices: 8
 test_labels: [1]
-retrieval_rank: 2
 force_input_size: 256
 prompt_mode: voronoi
 enable_dino_freq_fusion: true

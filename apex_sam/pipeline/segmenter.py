@@ -12,7 +12,7 @@ from scipy.ndimage import binary_fill_holes, distance_transform_edt
 from skimage import measure
 
 from apex_sam.config import ApexConfig
-from apex_sam.hmf.fusion import BranchPrediction, HMFSimpleFusion
+from apex_sam.hmf.fusion import BranchPrediction, VanillaBBoxPointHMF
 from apex_sam.premask.chamfer import ChamferMixin
 from apex_sam.premask.edges import EdgeMixin
 from apex_sam.premask.structure import StructureMixin
@@ -48,10 +48,9 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         # 加载 SAM2
         self.sam2_model = self._load_sam2()
 
-        self.hmf = HMFSimpleFusion(
+        self.hmf = VanillaBBoxPointHMF(
             temperature=float(self.config.hmf_temperature),
             clip_eps=float(self.config.hmf_clip_eps),
-            prior_bias=float(self.config.hmf_prior_bias),
         )
 
         print("[APEX-SAM] Ready")
@@ -295,18 +294,6 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         score = float(scores[index]) if scores else 0.0
         return np.clip(prob, 0.0, 1.0), score
 
-    def _prior_branch_confidence(self, prior_mask: np.ndarray, sdino: Optional[np.ndarray]) -> float:
-        prior = (prior_mask > 0.5)
-        if prior.sum() <= 0:
-            return 0.0
-        if sdino is None:
-            return 0.5
-        q = float(np.clip(self.config.dino_gate_quantile, 0.5, 0.99))
-        thr = float(np.quantile(sdino, q))
-        dino_hi = sdino >= thr
-        overlap = float((prior & dino_hi).sum()) / float(prior.sum() + 1e-6)
-        return float(np.clip(overlap, 0.0, 1.0))
-
     def _run_hmf_branches(
         self,
         bundle: Dict[str, Any],
@@ -326,13 +313,9 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         box_masks, box_scores, _ = self._run_sam_box(Iq_norm, bbox)
         box_prob, box_conf = self._pick_best_mask_prob(box_masks, box_scores, (h, w))
 
-        prior_prob = (M_pre > 0.5).astype(np.float32)
-        prior_conf = self._prior_branch_confidence(prior_prob, bundle.get("Sdino"))
-
         branch_data = [
             BranchPrediction(name="point", prob=point_prob, confidence=float(point_conf)),
-            BranchPrediction(name="box", prob=box_prob, confidence=float(box_conf)),
-            BranchPrediction(name="prior", prob=prior_prob, confidence=float(prior_conf)),
+            BranchPrediction(name="bbox", prob=box_prob, confidence=float(box_conf)),
         ]
 
         fused_mask, fusion_debug = self.hmf.fuse(branch_data)
@@ -340,8 +323,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         debug_dict["hmf"] = fusion_debug
         debug_dict["hmf_branch_scores"] = {
             "point": float(point_conf),
-            "box": float(box_conf),
-            "prior": float(prior_conf),
+            "bbox": float(box_conf),
         }
         return fused_mask, debug_dict
 

@@ -8,21 +8,15 @@
 
 </div>
 
-APEX-SAM is a **training-free** framework for cross-domain few-shot medical image segmentation.
+APEX-SAM is a training-free framework for cross-domain few-shot medical image segmentation.
 
 ## Abstract
 
-Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited. We present APEX-SAM, a retrieval-augmented framework with three innovations. QAR builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. APM performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. HMF fuses three SAM branches (point, text, and box prompts) via training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm state-of-the-art performance among training-free methods, with ablations validating each component's contribution.
+Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited. We present APEX-SAM, a retrieval-augmented framework with three innovations. QAR builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. APM performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. HMF fuses SAM branches (point, text, and box prompts in the full paper) via training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm strong performance among training-free methods, with ablations validating each component's contribution.
 
 ## Method Overview
 
 ![APEX-SAM overview](assets/images/method/arch_3.png)
-
-The full paper pipeline contains three components:
-
-- `QAR`: Quality-Aware Retrieval
-- `APM`: Anatomy-Aware Prompt Mining
-- `HMF`: Hybrid Multi-Modal Fusion
 
 ## Main Results (Paper)
 
@@ -66,85 +60,129 @@ The full paper pipeline contains three components:
 
 ![Qualitative and failure cases](assets/images/results/qual_failure.png)
 
-## Important Open-Source Scope
+## Open-Source Scope
 
-To protect patient privacy, we **do not release the private QAR database construction pipeline** or its curated internal support bank.
+To protect medical data privacy, this repository does not include the private expert database content.
 
-This public repository releases:
+What is released:
 
-- A reproducible **APM implementation**
-- A reproducible **simplified HMF implementation** (point/box/prior training-free fusion)
-- A public **support-pool interface** so users can provide their own support data
-- Data preprocessing and support-pool construction scripts
+- **Module-2 (APM)**: open-source implementation.
+- **Module-3 (HMF)**: open-source **vanilla bbox + point** implementation (same parameter setup as paper experiments).
+- **Inference/Eval path**: accepts one externally selected support pair.
 
-This means:
+What is placeholder-only:
 
-- You can run end-to-end inference with your own support pool.
-- You should **not** expect exact numbers from the full private paper system, because private QAR is not included.
+- **Module-1 (QAR expert database + DINOv3 rk2 retrieval)** is kept as file-level placeholders only.
+- Placeholder files are intentionally empty:
+  - `apex_sam/module1_qar/build_expert_database.py`
+  - `apex_sam/module1_qar/retrieve_support_rank2.py`
+
+You can build your own Module-1 with DINOv3 + SigLIP and place assets under `expert_database/`, then pass the selected support to this open-source inference pipeline.
 
 ## Repository Layout
 
 ```text
 apex_sam/
   cli/
-    eval.py                    # main inference/eval entry
-    preprocess_dataset.py      # dataset normalization script
-    build_support_pool.py      # build user-facing support pool
-  data/
-    normalized.py              # normalized dataset iterator
-    io.py                      # I/O + label remap + resize
+    build_expert_database.py   # Module-1 placeholder CLI
+    preprocess_dataset.py      # dataset preprocessing
+    inference.py               # single-case inference with one support
+    eval.py                    # dataset evaluation with one selected support
+  module1_qar/
+    build_expert_database.py   # empty placeholder
+    retrieve_support_rank2.py  # empty placeholder
   pipeline/
-    segmenter.py               # APM + simplified HMF core pipeline
-  support/
-    interface.py               # public support-provider protocol
-    filesystem_pool.py         # folder-based support provider
-    private_qar.py             # explicit private-stub placeholder
+    segmenter.py               # APM + vanilla HMF core pipeline
   hmf/
-    fusion.py                  # reliability-weighted branch fusion
+    fusion.py                  # bbox+point vanilla fusion
   premask/
   prompting/
   sam/
+expert_database/               # user-managed expert database assets
 scripts/
-  build_chaos_local_db.sh      # backward-compatible wrapper (now builds support pool)
-  run_chaos_minimal.sh
+  module1_qar_placeholder.sh
+  run_single_inference.sh
+  run_chaos_eval.sh
 ```
 
-## Installation
+## Setup
 
 ```bash
+git clone https://github.com/Trump0412/APEX-SAM.git
+cd APEX-SAM
+
 conda create -n apex-sam python=3.10 -y
 conda activate apex-sam
 pip install -e .
 ```
 
-## Checkpoints
+## Start
 
-By default we read checkpoints from environment variables:
+### 1) Download model repos
 
 ```bash
-export APEX_SAM_CHECKPOINT=/path/to/sam_vit_h_4b8939.pth
-export APEX_DINO_CHECKPOINT=/path/to/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
-export APEX_DINO_REPO=/path/to/dinov3_repo
+mkdir -p third_party
+cd third_party
+
+# SAM3
+git clone https://github.com/facebookresearch/sam3.git
+
+# DINOv3
+git clone https://github.com/facebookresearch/dinov3.git
+
+# SigLIP reference code
+git clone https://github.com/google-research/big_vision.git
 ```
 
-You can also pass explicit CLI arguments (`--sam-checkpoint`, `--dinov3-checkpoint`, `--dinov3-repo`).
+### 2) Download weights
 
-## Datasets Used in This Project
+```bash
+# Hugging Face login (needed for gated models, e.g. SAM3)
+hf auth login
 
-| Dataset | Role in project | Access |
+# SAM3 / SAM3.1 (gated)
+huggingface-cli download facebook/sam3 --local-dir ./checkpoints/sam3
+huggingface-cli download facebook/sam3.1 --local-dir ./checkpoints/sam3_1
+
+# DINOv3 ViT-L/16
+huggingface-cli download facebook/dinov3-vitl16-pretrain-lvd1689m --local-dir ./checkpoints/dinov3_vitl16
+
+# SigLIP SO400M
+huggingface-cli download google/siglip-so400m-patch14-384 --local-dir ./checkpoints/siglip_so400m
+```
+
+Set paths for this repository:
+
+```bash
+export APEX_SAM_CHECKPOINT=/absolute/path/to/your_sam_checkpoint
+export APEX_DINO_CHECKPOINT=/absolute/path/to/your_dinov3_checkpoint
+export APEX_DINO_REPO=/absolute/path/to/third_party/dinov3
+```
+
+Use a checkpoint format that matches your installed SAM backend.
+
+### 3) Prepare expert database directory and selected support
+
+```text
+expert_database/
+  ... your externally built assets ...
+
+support_item/
+  image.npy
+  mask_label1.npy
+  mask_label2.npy
+  ...
+```
+
+## Datasets
+
+| Dataset | Usage | Link |
 |---|---|---|
-| CHAOS (CT/MR abdominal) | Abd-MRI / Abd-CT experiments | https://chaos.grand-challenge.org/Data/ |
-| MS-CMRSeg 2019 (Cardiac MRI) | Card-MRI experiments | https://zmiclab.github.io/zxh/0/mscmrseg19/data.html |
-| MICCAI 2013 SATA (CAP split) | Additional cross-domain support source in internal experiments | https://masi.vuse.vanderbilt.edu/submission/leaderboard.html |
+| CHAOS (CT/MR abdominal) | Abd-MRI / Abd-CT | https://chaos.grand-challenge.org/Data/ |
+| MS-CMRSeg 2019 | Card-MRI | https://zmiclab.github.io/zxh/0/mscmrseg19/data.html |
+| MICCAI 2013 SATA (CAP split) | additional cross-domain source | https://masi.vuse.vanderbilt.edu/submission/leaderboard.html |
 
-Notes:
-
-- `MS-CMRSeg` data are available after registration and DUA submission.
-- `SATA CAP` is a legacy challenge dataset; access is organizer-controlled.
-
-## Dataset Preprocessing
-
-Convert your raw image/label NIfTI pairs to the standardized layout:
+## Preprocess Dataset
 
 ```bash
 python -m apex_sam.cli.preprocess_dataset \
@@ -154,69 +192,42 @@ python -m apex_sam.cli.preprocess_dataset \
   --output-dir /path/to/CHAOS_MR_T2_preprocessed
 ```
 
-Supported dataset names:
+Supported `--dataset` values:
 
 - `CHAOS_MR_T2`
 - `CHAOS_CT`
 - `MSCMR` / `MS-CMR`
 - `SATA_CAP`
 
-Expected output:
+## Inference
 
-```text
-<output_dir>/
-  normalized/
-    image_000.nii.gz
-    label_000.nii.gz
-    image_001.nii.gz
-    label_001.nii.gz
-    ...
-  preprocess_manifest.json
-```
-
-## Build Public Support Pool (QAR Interface Replacement)
-
-Users provide support examples through a folder-based pool.
-
-Build from a normalized dataset:
+Single query with one selected support pair:
 
 ```bash
-python -m apex_sam.cli.build_support_pool \
-  --dataset CHAOS_MR_T2 \
-  --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --output-dir /path/to/support_pool \
-  --labels 1 2 3 4 \
-  --max-support-per-label 24
+python -m apex_sam.cli.inference \
+  --support-image-path /path/to/support_item/image.npy \
+  --support-mask-path /path/to/support_item/mask_label1.npy \
+  --query-image-path /path/to/query_slice.npy \
+  --output-mask-path ./outputs/query_pred.npy \
+  --sam-checkpoint $APEX_SAM_CHECKPOINT \
+  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
+  --dinov3-repo $APEX_DINO_REPO \
+  --device cuda
 ```
 
-Generated format:
+## Eval
 
-```text
-support_pool/
-  support_slices/
-    case_000_slice_015/
-      image.npy
-      mask_label1.npy
-      mask_label2.npy
-      ...
-      meta.json
-  manifest/
-    support_summary.csv
-    summary.json
-```
-
-## Run Evaluation
+Evaluate on a normalized dataset using externally selected support:
 
 ```bash
 python -m apex_sam.cli.eval \
   --dataset CHAOS_MR_T2 \
   --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --support-pool-dir /path/to/support_pool \
+  --expert-database-dir /path/to/expert_database \
+  --support-item-dir /path/to/support_item \
   --test-labels 1 2 3 4 \
   --max-cases 3 \
   --max-slices 8 \
-  --retrieval-rank 2 \
-  --retrieval-topk 5 \
   --sam-checkpoint $APEX_SAM_CHECKPOINT \
   --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
   --dinov3-repo $APEX_DINO_REPO \
@@ -224,40 +235,15 @@ python -m apex_sam.cli.eval \
   --device cuda
 ```
 
-Outputs:
-
-- `run_YYYYmmdd_HHMMSS/metrics.csv`
-- `run_YYYYmmdd_HHMMSS/summary.json`
-- `run_YYYYmmdd_HHMMSS/preds/`
-- `run_YYYYmmdd_HHMMSS/overlays/`
-
-## Verified Server Reproduction (Executed)
-
-The public pipeline was executed successfully on our remote server with existing preprocessed data and support slices.
-
-Example completed run directories:
-
-- `/root/autodl-tmp/ssb_output/apex_sam_open_release_runs/run_20260417_114904`
-- `/root/autodl-tmp/ssb_output/apex_sam_open_release_runs/run_20260417_115544`
-
-## Reproducibility Notes
-
-- No hard-coded absolute data paths are required in code.
-- QAR private components are intentionally excluded.
-- The released HMF is simplified and training-free.
+Outputs are written under `./outputs/run_YYYYmmdd_HHMMSS/`.
 
 ## Citation
 
 ```bibtex
 @inproceedings{apexsam2026,
-  title     = {APEX-SAM: Anatomy-aware Prompting with Expert Retrieval
-               for Training-free Medical Image Segmentation},
+  title     = {APEX-SAM: Anatomy-aware Prompting with Expert Retrieval for Training-free Medical Image Segmentation},
   author    = {Anonymous Authors},
   booktitle = {Medical Image Computing and Computer Assisted Intervention (MICCAI)},
   year      = {2026},
 }
 ```
-
-## License
-
-This project is released under the [MIT License](LICENSE).

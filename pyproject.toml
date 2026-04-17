@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "apex-sam"
 version = "0.1.0"
-description = "Minimal reproducibility release for APEX-SAM on CHAOS-MRI"
+description = "Open-source implementation of APEX-SAM (APM + vanilla HMF)"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -21,9 +21,9 @@ dependencies = [
 ]
 
 [project.scripts]
-apex-sam-build-db = "apex_sam.cli.build_local_db:main"
-apex-sam-build-support-pool = "apex_sam.cli.build_support_pool:main"
+apex-sam-module1-qar = "apex_sam.cli.build_expert_database:main"
 apex-sam-preprocess = "apex_sam.cli.preprocess_dataset:main"
+apex-sam-infer = "apex_sam.cli.inference:main"
 apex-sam-eval = "apex_sam.cli.eval:main"
 
 [tool.setuptools.packages.find]

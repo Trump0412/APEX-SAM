@@ -121,11 +121,6 @@ class VoronoiPromptMixin:
 
         return P_pos, P_neg
 
-    def _sample_points(self, Pin: np.ndarray, Pband: np.ndarray, Sdino: np.ndarray,
-                       Dalign: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """Backward-compatible entry point using legacy sampling."""
-        return self._sample_points_legacy(Pin, Pband, Sdino, Dalign)
-
     def _sample_negative_points(self, Pband: np.ndarray, Sdino: np.ndarray, Dpre: np.ndarray,
                                 Pin: Optional[np.ndarray] = None) -> np.ndarray:
         """Sample negative points close to the pre-mask boundary."""

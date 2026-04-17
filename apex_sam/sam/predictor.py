@@ -125,6 +125,3 @@ class SamMixin:
 
     def _run_sam_box(self, Iq: np.ndarray, bbox: Tuple[int, int, int, int]):
         return self.sam_backend.predict_with_box(Iq, bbox)
-
-    def _run_sam_points_and_box(self, Iq: np.ndarray, P_pos: np.ndarray, P_neg: np.ndarray, bbox: Tuple[int, int, int, int]):
-        return self.sam_backend.predict_with_points_and_box(Iq, P_pos, P_neg, bbox)

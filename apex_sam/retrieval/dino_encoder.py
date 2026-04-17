@@ -112,9 +112,6 @@ class DinoFeatureMixin:
         )
         return self.dino_encoder.model
 
-    def _compute_global_descriptor(self, img: np.ndarray, mask: Optional[np.ndarray] = None) -> np.ndarray:
-        return self.dino_encoder.compute_global_descriptor(img, mask)
-
     def _extract_dino_features(self, img: np.ndarray) -> np.ndarray:
         return self.dino_encoder.extract_features(img)
 

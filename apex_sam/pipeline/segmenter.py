@@ -89,41 +89,6 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         cleaned = (labels == largest_label).astype(mask.dtype)
         return cleaned
 
-    def _crop_to_content(self, img: np.ndarray, mask: Optional[np.ndarray] = None,
-                         margin: int = 2, thresh_ratio: float = 0.01) -> Tuple[np.ndarray, Optional[np.ndarray], Tuple[int, int, int, int]]:
-        """Crop surrounding black borders and return image/mask/bbox."""
-        H, W = img.shape[:2]
-        if mask is not None and mask.any():
-            ys, xs = np.nonzero(mask > 0.5)
-        else:
-            thr = img.max() * thresh_ratio
-            ys, xs = np.nonzero(img > thr)
-
-        if len(xs) == 0 or len(ys) == 0:
-            return img, mask, (0, 0, W, H)
-
-        x0 = max(0, xs.min() - margin)
-        x1 = min(W, xs.max() + margin + 1)
-        y0 = max(0, ys.min() - margin)
-        y1 = min(H, ys.max() + margin + 1)
-
-        img_c = img[y0:y1, x0:x1]
-        mask_c = mask[y0:y1, x0:x1] if mask is not None else None
-
-        return img_c, mask_c, (x0, y0, x1, y1)
-
-    def _bbox_from_mask(self, mask: np.ndarray) -> Tuple[int, int, int, int]:
-        """Tight bbox around mask; returns full image if empty."""
-        H, W = mask.shape[:2]
-        ys, xs = np.nonzero(mask > 0)
-        if xs.size == 0 or ys.size == 0:
-            return 0, 0, W, H
-        x0 = int(xs.min())
-        x1 = int(xs.max()) + 1
-        y0 = int(ys.min())
-        y1 = int(ys.max()) + 1
-        return x0, y0, x1, y1
-
     def _compute_signed_distance(self, mask: np.ndarray) -> np.ndarray:
         """Compute signed distance field of a binary mask."""
         mask_bin = (mask > 0.5).astype(np.uint8)

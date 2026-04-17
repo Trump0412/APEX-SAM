@@ -202,72 +202,51 @@ Single query with one selected support pair:
 
 ```bash
 python -m apex_sam.cli.inference \
-  --support-image-path /path/to/support_item/image.npy \
-  --support-mask-path /path/to/support_item/mask_label1.npy \
-  --query-image-path /path/to/query_slice.npy \
-  --output-mask-path ./outputs/query_pred.npy \
-  --sam-checkpoint $APEX_SAM_CHECKPOINT \
-  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
-  --dinov3-repo $APEX_DINO_REPO \
-  --device cuda
+  --support-item-dir /path/to/support_item \
+  --query-image-path /path/to/query_slice.npy
 ```
 
-Full-set inference after Module-1 is configured:
+Output defaults to `./outputs/inference_pred.npy`.
+
+If you want a custom output path:
 
 ```bash
-python -m apex_sam.cli.eval \
-  --dataset CHAOS_MR_T2 \
-  --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --expert-database-dir /path/to/expert_database \
+python -m apex_sam.cli.inference \
   --support-item-dir /path/to/support_item \
-  --test-labels 1 2 3 4 \
-  --max-cases -1 \
-  --max-slices -1 \
-  --sam-checkpoint $APEX_SAM_CHECKPOINT \
-  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
-  --dinov3-repo $APEX_DINO_REPO \
-  --output-root ./outputs \
-  --device cuda
+  --query-image-path /path/to/query_slice.npy \
+  --output-mask-path ./outputs/query_pred.npy
 ```
 
 ## Eval
 
-Evaluate on a normalized dataset using externally selected support:
+Full-set test after Module-1 is implemented and configured:
 
 ```bash
 python -m apex_sam.cli.eval \
-  --dataset CHAOS_MR_T2 \
   --data-dir /path/to/CHAOS_MR_T2_preprocessed \
   --expert-database-dir /path/to/expert_database \
-  --support-item-dir /path/to/support_item \
-  --test-labels 1 2 3 4 \
-  --max-cases 3 \
-  --max-slices 8 \
-  --sam-checkpoint $APEX_SAM_CHECKPOINT \
-  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
-  --dinov3-repo $APEX_DINO_REPO \
-  --output-root ./outputs \
-  --device cuda
+  --support-item-dir /path/to/support_item
 ```
 
-Full-set test command after Module-1 is implemented and configured:
+This command uses defaults:
+
+- `dataset=CHAOS_MR_T2`
+- `test_labels` auto-detected from `support_item` (`mask_label*.npy`)
+- `max_cases=-1` (all cases)
+- `max_slices=-1` (all valid slices)
+- `eval_protocol=case_max_filtered`
+- `case_dice_threshold=0.1`
+- `output_root=./outputs`
+
+For a quick smoke eval:
 
 ```bash
 python -m apex_sam.cli.eval \
-  --dataset CHAOS_MR_T2 \
   --data-dir /path/to/CHAOS_MR_T2_preprocessed \
   --expert-database-dir /path/to/expert_database \
   --support-item-dir /path/to/support_item \
-  --test-labels 1 2 3 4 \
-  --max-cases -1 \
-  --max-slices -1 \
-  --eval-protocol case_max_filtered \
-  --case-dice-threshold 0.1 \
-  --sam-checkpoint $APEX_SAM_CHECKPOINT \
-  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
-  --dinov3-repo $APEX_DINO_REPO \
-  --output-root ./outputs \
-  --device cuda
+  --max-cases 3 \
+  --max-slices 8
 ```
 
 Outputs are written under `./outputs/run_YYYYmmdd_HHMMSS/`.

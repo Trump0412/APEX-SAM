@@ -11,16 +11,15 @@ if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
   fi
 fi
 
+DATA_DIR="$1"
+EXPERT_DATABASE_DIR="${2:-expert_database}"
+SUPPORT_ITEM_DIR="${3:-support_item}"
+OUTPUT_ROOT="${4:-./outputs}"
+EXTRA_ARGS=("${@:5}")
+
 "$PYTHON_BIN" -m apex_sam.cli.eval \
-  --dataset CHAOS_MR_T2 \
-  --data-dir "$1" \
-  --expert-database-dir "$2" \
-  --support-item-dir "$3" \
-  --max-cases "${4:-3}" \
-  --max-slices "${5:-8}" \
-  --test-labels ${6:-1} \
-  --output-root "${7:-./outputs}" \
-  --sam-checkpoint "$8" \
-  --dinov3-checkpoint "$9" \
-  --dinov3-repo "${10}" \
-  --device "${11:-cuda}"
+  --data-dir "$DATA_DIR" \
+  --expert-database-dir "$EXPERT_DATABASE_DIR" \
+  --support-item-dir "$SUPPORT_ITEM_DIR" \
+  --output-root "$OUTPUT_ROOT" \
+  "${EXTRA_ARGS[@]}"

@@ -33,10 +33,11 @@ def _select_slice(arr: np.ndarray, slice_index: int | None) -> np.ndarray:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Single-case inference with one externally selected support pair.")
-    parser.add_argument("--support-image-path", required=True)
-    parser.add_argument("--support-mask-path", required=True)
+    parser.add_argument("--support-item-dir", default="", help="Directory containing image.npy and mask_label1.npy")
+    parser.add_argument("--support-image-path", default="")
+    parser.add_argument("--support-mask-path", default="")
     parser.add_argument("--query-image-path", required=True)
-    parser.add_argument("--output-mask-path", required=True)
+    parser.add_argument("--output-mask-path", default="outputs/inference_pred.npy")
     parser.add_argument("--support-slice-index", type=int, default=None)
     parser.add_argument("--query-slice-index", type=int, default=None)
     parser.add_argument("--force-input-size", type=int, default=256)
@@ -68,8 +69,26 @@ def main() -> None:
         hmf_clip_eps=float(args.hmf_clip_eps),
     )
 
-    support_image = _select_slice(_load_array(args.support_image_path), args.support_slice_index).astype(np.float32)
-    support_mask = (_select_slice(_load_array(args.support_mask_path), args.support_slice_index) > 0.5).astype(np.float32)
+    support_image_path = args.support_image_path
+    support_mask_path = args.support_mask_path
+    if args.support_item_dir:
+        support_dir = Path(args.support_item_dir).expanduser().resolve()
+        if not support_image_path:
+            support_image_path = str(support_dir / "image.npy")
+        if not support_mask_path:
+            support_mask_path = str(support_dir / "mask_label1.npy")
+
+    if not support_image_path:
+        raise RuntimeError("Please provide --support-item-dir or --support-image-path.")
+    if not support_mask_path:
+        sibling = Path(support_image_path).with_name("mask_label1.npy")
+        if sibling.exists():
+            support_mask_path = str(sibling)
+        else:
+            raise RuntimeError("Please provide --support-mask-path or use --support-item-dir.")
+
+    support_image = _select_slice(_load_array(support_image_path), args.support_slice_index).astype(np.float32)
+    support_mask = (_select_slice(_load_array(support_mask_path), args.support_slice_index) > 0.5).astype(np.float32)
     query_image = _select_slice(_load_array(args.query_image_path), args.query_slice_index).astype(np.float32)
 
     support_image_in = resize_image_2d(support_image, (config.force_input_size, config.force_input_size))

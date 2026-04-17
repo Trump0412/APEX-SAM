@@ -11,12 +11,13 @@ if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
   fi
 fi
 
+SUPPORT_ITEM_DIR="$1"
+QUERY_IMAGE_PATH="$2"
+OUTPUT_MASK_PATH="${3:-./outputs/inference_pred.npy}"
+EXTRA_ARGS=("${@:4}")
+
 "$PYTHON_BIN" -m apex_sam.cli.inference \
-  --support-image-path "$1" \
-  --support-mask-path "$2" \
-  --query-image-path "$3" \
-  --output-mask-path "$4" \
-  --sam-checkpoint "$5" \
-  --dinov3-checkpoint "$6" \
-  --dinov3-repo "$7" \
-  --device "${8:-cuda}"
+  --support-item-dir "$SUPPORT_ITEM_DIR" \
+  --query-image-path "$QUERY_IMAGE_PATH" \
+  --output-mask-path "$OUTPUT_MASK_PATH" \
+  "${EXTRA_ARGS[@]}"

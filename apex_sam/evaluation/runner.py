@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+import re
 from typing import Any
 
 import numpy as np
@@ -93,6 +94,24 @@ def _resolve_support_pair(config: ApexConfig, label_value: int) -> tuple[np.ndar
     return support_image, support_mask, meta
 
 
+def _resolve_test_labels(config: ApexConfig) -> list[int]:
+    labels = [int(v) for v in list(config.test_labels)]
+    if labels:
+        return sorted(set(labels))
+
+    if config.support_item_dir:
+        support_dir = Path(config.support_item_dir).expanduser().resolve()
+        detected: list[int] = []
+        for path in sorted(support_dir.glob("mask_label*.npy")):
+            match = re.search(r"mask_label(\d+)\.npy$", path.name)
+            if match:
+                detected.append(int(match.group(1)))
+        if detected:
+            return sorted(set(detected))
+
+    return [1]
+
+
 def run_evaluation(config: ApexConfig) -> RunSummary:
     run_dir = create_run_dir(config.output_root)
     logger = _setup_logger(run_dir)
@@ -107,8 +126,10 @@ def run_evaluation(config: ApexConfig) -> RunSummary:
     seen_slices = 0
 
     label_support_cache: dict[int, tuple[np.ndarray, np.ndarray, dict[str, Any]]] = {}
+    active_labels = _resolve_test_labels(config)
+    logger.info("Active labels: %s", active_labels)
 
-    for label_value in config.test_labels:
+    for label_value in active_labels:
         label_value = int(label_value)
         support_image, support_mask, support_meta = _resolve_support_pair(config, label_value)
         label_support_cache[label_value] = (support_image, support_mask, support_meta)
@@ -189,7 +210,7 @@ def run_evaluation(config: ApexConfig) -> RunSummary:
         "data_dir": config.data_dir,
         "dataset": config.dataset,
         "expert_database_dir": config.expert_database_dir,
-        "labels": list(config.test_labels),
+        "labels": active_labels,
         "eval_protocol": config.eval_protocol,
         "mean_dice_overall": mean_dice_overall,
         "mean_dice_per_label": mean_dice_per_label,

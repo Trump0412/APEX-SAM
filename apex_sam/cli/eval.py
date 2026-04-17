@@ -13,12 +13,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--expert-database-dir",
-        default="",
-        help="Path to external expert database assets (Module-1 placeholder; matching is not open-sourced).",
+        default="expert_database",
+        help="Path to external expert database assets.",
     )
     parser.add_argument(
         "--support-item-dir",
-        default="",
+        default="support_item",
         help="Directory containing one selected support: image.npy + mask_label{label}.npy",
     )
     parser.add_argument("--support-image-path", default="", help="Path to selected support image (.npy/.nii/.nii.gz)")
@@ -30,14 +30,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument("--output-root", default=DEFAULT_OUTPUT_ROOT)
-    parser.add_argument("--max-cases", type=int, default=3, help="Use -1 for all cases.")
-    parser.add_argument("--max-slices", type=int, default=8, help="Use -1 for all valid slices.")
-    parser.add_argument("--test-labels", type=int, nargs="*", default=[1])
+    parser.add_argument("--max-cases", type=int, default=-1, help="Use -1 for all cases.")
+    parser.add_argument("--max-slices", type=int, default=-1, help="Use -1 for all valid slices.")
+    parser.add_argument("--test-labels", type=int, nargs="*", default=[])
     parser.add_argument("--force-input-size", type=int, default=256)
     parser.add_argument(
         "--eval-protocol",
         choices=["slice_mean", "case_max_filtered"],
-        default="slice_mean",
+        default="case_max_filtered",
         help="Evaluation aggregation protocol.",
     )
     parser.add_argument(

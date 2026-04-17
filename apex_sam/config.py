@@ -17,16 +17,16 @@ class ApexConfig:
     support_mask_path: str = ""
     support_mask_template: str = ""
     output_root: str = DEFAULT_OUTPUT_ROOT
-    max_cases: int | None = 3
-    max_slices: int | None = 8
-    test_labels: list[int] = field(default_factory=lambda: [1])
+    max_cases: int | None = None
+    max_slices: int | None = None
+    test_labels: list[int] = field(default_factory=list)
     force_input_size: int = 256
     bbox_size: int = 112
     prompt_mode: Literal["voronoi"] = "voronoi"
     enable_hmf: bool = True
     hmf_temperature: float = 1.0
     hmf_clip_eps: float = 1e-4
-    eval_protocol: Literal["slice_mean", "case_max_filtered"] = "slice_mean"
+    eval_protocol: Literal["slice_mean", "case_max_filtered"] = "case_max_filtered"
     case_dice_threshold: float = 0.1
     enable_dino_freq_fusion: bool = True
     dino_gate_quantile: float = 0.9
@@ -148,8 +148,8 @@ class ApexConfig:
 
     @classmethod
     def from_cli_args(cls, args: Any) -> "ApexConfig":
-        max_cases = getattr(args, "max_cases", 3)
-        max_slices = getattr(args, "max_slices", 8)
+        max_cases = getattr(args, "max_cases", -1)
+        max_slices = getattr(args, "max_slices", -1)
         if max_cases is not None and int(max_cases) < 0:
             max_cases = None
         if max_slices is not None and int(max_slices) < 0:
@@ -171,7 +171,7 @@ class ApexConfig:
             enable_hmf=getattr(args, "enable_hmf", True),
             hmf_temperature=getattr(args, "hmf_temperature", 1.0),
             hmf_clip_eps=getattr(args, "hmf_clip_eps", 1e-4),
-            eval_protocol=getattr(args, "eval_protocol", "slice_mean"),
+            eval_protocol=getattr(args, "eval_protocol", "case_max_filtered"),
             case_dice_threshold=float(getattr(args, "case_dice_threshold", 0.1)),
             sam_checkpoint=args.sam_checkpoint,
             dinov3_checkpoint=args.dinov3_checkpoint,

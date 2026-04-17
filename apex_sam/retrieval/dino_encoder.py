@@ -167,20 +167,6 @@ class DinoFeatureMixin:
             cur = self._haar_idwt2(cur, det)
         return cur
 
-    def _blend_details(
-        self,
-        details_a: List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
-        details_b: List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
-        ratio: float,
-    ) -> List[Tuple[np.ndarray, np.ndarray, np.ndarray]]:
-        blended = []
-        for det_a, det_b in zip(details_a, details_b):
-            lh = (1 - ratio) * det_a[0] + ratio * det_b[0]
-            hl = (1 - ratio) * det_a[1] + ratio * det_b[1]
-            hh = (1 - ratio) * det_a[2] + ratio * det_b[2]
-            blended.append((lh, hl, hh))
-        return blended
-
     def _wavelet_mix_support_for_dino(
         self,
         Is_norm: np.ndarray,
@@ -215,14 +201,8 @@ class DinoFeatureMixin:
         qry_pad_sup, _ = self._pad_to_multiple(qry_to_sup, multiple)
         sup_ll, sup_details = self._haar_dwt2_multi(sup_pad, level)
         qry_ll, qry_details = self._haar_dwt2_multi(qry_pad_sup, level)
-
-        if self.config.dino_freq_mix_mode == "blend":
-            ratio = float(self.config.dino_freq_mix_ratio)
-            mixed_details = self._blend_details(sup_details, qry_details, ratio)
-            sup_mixed_pad = self._haar_idwt2_multi(qry_ll, mixed_details)
-        else:
-            # support_high: keep support high-frequency, replace low-frequency with query
-            sup_mixed_pad = self._haar_idwt2_multi(qry_ll, sup_details)
+        # Keep support high-frequency, replace low-frequency with query.
+        sup_mixed_pad = self._haar_idwt2_multi(qry_ll, sup_details)
 
         sup_mixed = self._normalize(self._crop_to_shape(sup_mixed_pad, sup_shape))
         qry_gray = qry.astype(np.float32)

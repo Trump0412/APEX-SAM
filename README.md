@@ -217,6 +217,17 @@ python -m apex_sam.cli.inference \
   --output-mask-path ./outputs/query_pred.npy
 ```
 
+Full-set inference after Module-1 is implemented and configured:
+
+```bash
+python -m apex_sam.cli.eval \
+  --data-dir /path/to/CHAOS_MR_T2_preprocessed \
+  --expert-database-dir /path/to/expert_database \
+  --support-item-dir /path/to/support_item
+```
+
+Predictions are saved under `./outputs/run_YYYYmmdd_HHMMSS/preds/`.
+
 ## Eval
 
 Full-set test after Module-1 is implemented and configured:

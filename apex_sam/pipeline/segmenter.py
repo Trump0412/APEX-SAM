@@ -342,17 +342,6 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         img = np.clip(img * 255.0, 0, 255).astype(np.uint8)
         return img
 
-    def _save_gray(self, arr: np.ndarray, out_path: Optional[str], normalize: bool = True, colormap: Optional[int] = None) -> Optional[str]:
-        if out_path is None:
-            return None
-        img_u8 = self._to_uint8(arr, normalize=normalize)
-        if colormap is not None:
-            img_u8 = cv2.applyColorMap(img_u8, colormap)
-        else:
-            img_u8 = cv2.cvtColor(img_u8, cv2.COLOR_GRAY2BGR)
-        cv2.imwrite(out_path, img_u8)
-        return out_path
-
     def _mask_boundary(self, mask: np.ndarray) -> np.ndarray:
         mask_u8 = (mask > 0).astype(np.uint8)
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -386,23 +375,6 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         gt_overlay = self._overlay_boundary(img, gt, color=(0, 0, 255))
         comp = np.concatenate([pred_overlay, gt_overlay], axis=1)
         cv2.imwrite(out_path, comp)
-        return out_path
-
-    def _save_wavelet_bands(self, ll: np.ndarray, details: List[Tuple[np.ndarray, np.ndarray, np.ndarray]],
-                            out_path: Optional[str]) -> Optional[str]:
-        if out_path is None or details is None or len(details) == 0:
-            return None
-        lh, hl, hh = details[0]
-        # Resize bands to same size
-        h, w = ll.shape
-        lh_r = cv2.resize(lh, (w, h), interpolation=cv2.INTER_LINEAR)
-        hl_r = cv2.resize(hl, (w, h), interpolation=cv2.INTER_LINEAR)
-        hh_r = cv2.resize(hh, (w, h), interpolation=cv2.INTER_LINEAR)
-        top = np.concatenate([self._to_uint8(ll), self._to_uint8(lh_r)], axis=1)
-        bottom = np.concatenate([self._to_uint8(hl_r), self._to_uint8(hh_r)], axis=1)
-        mosaic = np.concatenate([top, bottom], axis=0)
-        mosaic = cv2.cvtColor(mosaic, cv2.COLOR_GRAY2BGR)
-        cv2.imwrite(out_path, mosaic)
         return out_path
 
     def _prepare_label_bundle(

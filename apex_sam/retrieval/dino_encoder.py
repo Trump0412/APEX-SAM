@@ -181,81 +181,12 @@ class DinoFeatureMixin:
             blended.append((lh, hl, hh))
         return blended
 
-    def _wavelet_mix_images(
-        self,
-        Is_norm: np.ndarray,
-        Iq_norm: np.ndarray,
-    ) -> Tuple[np.ndarray, np.ndarray, Dict[str, Any]]:
-        """
-        小波频域风格融合：对 support/query 进行分解并融合部分频段
-        """
-        sup = Is_norm.astype(np.float32)
-        qry = Iq_norm.astype(np.float32)
-        if sup.ndim == 3:
-            sup = sup.mean(axis=-1)
-        if qry.ndim == 3:
-            qry = qry.mean(axis=-1)
-
-        sup = self._normalize(sup)
-        qry = self._normalize(qry)
-
-        # Prepare resized versions for cross-mixing
-        if sup.shape != qry.shape:
-            qry_to_sup = cv2.resize(qry, (sup.shape[1], sup.shape[0]), interpolation=cv2.INTER_LINEAR)
-            sup_to_qry = cv2.resize(sup, (qry.shape[1], qry.shape[0]), interpolation=cv2.INTER_LINEAR)
-        else:
-            qry_to_sup = qry
-            sup_to_qry = sup
-
-        level = int(self.config.freq_style_level)
-        min_dim = min(sup.shape)
-        if min_dim < 2:
-            level = 1
-        else:
-            max_level = int(math.floor(math.log2(min_dim)))
-            level = max(1, min(level, max_level))
-
-        multiple = 2 ** level
-
-        sup_pad, sup_shape = self._pad_to_multiple(sup, multiple)
-        qry_pad_sup, _ = self._pad_to_multiple(qry_to_sup, multiple)
-        sup_ll, sup_details = self._haar_dwt2_multi(sup_pad, level)
-        qry_ll_sup, qry_details_sup = self._haar_dwt2_multi(qry_pad_sup, level)
-        sup_mixed_pad = self._haar_idwt2_multi(qry_ll_sup, sup_details)
-        sup_mixed = self._normalize(self._crop_to_shape(sup_mixed_pad, sup_shape))
-
-        qry_pad, qry_shape = self._pad_to_multiple(qry, multiple)
-        sup_pad_qry, _ = self._pad_to_multiple(sup_to_qry, multiple)
-        qry_ll, qry_details = self._haar_dwt2_multi(qry_pad, level)
-        sup_ll_qry, sup_details_qry = self._haar_dwt2_multi(sup_pad_qry, level)
-
-        if self.config.freq_mix_mode == "blend":
-            ratio = float(self.config.freq_mix_ratio)
-            mixed_details = self._blend_details(qry_details, sup_details_qry, ratio)
-        else:
-            mixed_details = sup_details_qry
-        qry_mixed_pad = self._haar_idwt2_multi(qry_ll, mixed_details)
-        qry_mixed = self._normalize(self._crop_to_shape(qry_mixed_pad, qry_shape))
-
-        debug = {
-            "support_ll": sup_ll,
-            "support_details": sup_details,
-            "query_ll": qry_ll,
-            "query_details": qry_details,
-            "support_mixed": sup_mixed,
-            "query_mixed": qry_mixed,
-        }
-        return sup_mixed, qry_mixed, debug
-
     def _wavelet_mix_support_for_dino(
         self,
         Is_norm: np.ndarray,
         Iq_norm: np.ndarray,
     ) -> Tuple[np.ndarray, np.ndarray, Dict[str, Any]]:
-        """
-        DINO 频域融合（maup-style）：用 query 的低频替换 support，再做 DINO 相似度。
-        返回对齐后的 support 与 query 灰度（用于 DINO 特征）。
-        """
+        """DWT-based DINO fusion: replace support low-frequency with query low-frequency."""
         sup = Is_norm.astype(np.float32)
         qry = Iq_norm.astype(np.float32)
         if sup.ndim == 3:
@@ -311,22 +242,7 @@ class DinoFeatureMixin:
         Ms: np.ndarray,
         Iq_norm: np.ndarray,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray], Dict[str, Any]]:
-        """
-        A6. 计算 DINOv3 相似度图 + maup-style 区域相似度
-
-        Args:
-            Is_norm: 支持图像 (H, W), [0, 1]
-            Ms: 支持掩码 (H, W), {0, 1}
-            Iq_norm: 查询图像 (H, W), [0, 1]
-
-        Returns:
-            Sdino: 相似度图 (H, W), [0, 1] (由区域相似度均值得到)
-            F_q_dino: 查询特征 (H, W, C) 归一化
-            F_s_dino: 支撑特征 (H, W, C)
-            sim_maps: 区域相似度 maps (R, H, W) / None
-            dino_region: 高相似区域 mask (H, W) / None
-            dino_info: 区域相似度统计信息
-        """
+        """Compute DINO similarity map and regional similarity masks."""
         # Extract features
         F_s = self._extract_dino_features(Is_norm)  # (H_s, W_s, C)
         F_q = self._extract_dino_features(Iq_norm)  # (H_q, W_q, C)
@@ -346,7 +262,7 @@ class DinoFeatureMixin:
         Sdino_proto = (Sdino_proto + 1) / 2
         Sdino_proto = np.clip(Sdino_proto, 0, 1)
 
-        # maup-style regional similarity maps (K=24, top16)
+        # Regional similarity maps (K=24, top16)
         sim_maps = self._regional_similarity_maps(F_s, Ms, F_q_norm)
         if sim_maps is not None and sim_maps.size > 0:
             sim_mean = sim_maps.mean(axis=0)
@@ -364,10 +280,7 @@ class DinoFeatureMixin:
         Ms: np.ndarray,
         Fq_norm: np.ndarray,
     ) -> np.ndarray:
-        """
-        maup-style regional similarity maps (KMeans on support mask regions).
-        Returns: (R, Hq, Wq)
-        """
+        """Build regional similarity maps by KMeans over support-mask regions. Returns (R, Hq, Wq)."""
         if Fs is None or Fq_norm is None:
             return np.zeros((0, 1, 1), dtype=np.float32)
         Hs, Ws, C = Fs.shape

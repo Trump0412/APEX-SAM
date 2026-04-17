@@ -41,7 +41,7 @@ class StructureMixin:
         sim_mean: Optional[np.ndarray] = None,
     ) -> Tuple[Optional[np.ndarray], Dict[str, Any]]:
         """
-        Build high-similarity region mask from maup-style regional similarity maps.
+        Build high-similarity region mask from regional similarity maps.
         The mask is derived from top-k regional sim maps, not a single prototype map.
         """
         info: Dict[str, Any] = {"thr": None, "per_region_thr": [], "num_regions": 0, "area": 0}
@@ -217,9 +217,7 @@ class StructureMixin:
         migrated_mask_roi: Optional[np.ndarray] = None,
         Iq_roi: Optional[np.ndarray] = None,
     ) -> Tuple[np.ndarray, Dict[str, Any]]:
-        """
-        将 pre-mask 吸附到查询边缘图中的最近闭合结构，保证 query-native。
-        """
+        """Snap the pre-mask to the closest closed structure in query edges."""
         H, W = Eq_roi.shape
         info: Dict[str, Any] = {
             "used": False,
@@ -608,16 +606,7 @@ class StructureMixin:
         return out.astype(np.uint8), info
 
     def _compute_shape_priors(self, Dalign: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        A5. 计算形状先验
-
-        Args:
-            Dalign: 对齐后的距离场 (H, W)
-
-        Returns:
-            Pin: 内部先验 (H, W), [0, 1]
-            Pband: 边界带先验 (H, W), [0, 1]
-        """
+        """Compute shape priors from the aligned signed-distance field."""
         # Inside prior: sigmoid
         Pin = 1.0 / (1.0 + np.exp(-Dalign / self.config.tau_in))
 

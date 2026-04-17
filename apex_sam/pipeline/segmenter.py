@@ -24,28 +24,23 @@ from apex_sam.types import PredictionResult
 
 class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, VoronoiPromptMixin, SamMixin):
     def __init__(self, config: Optional[ApexConfig] = None):
-        """
-        初始化分割器
-
-        Args:
-            config: 配置对象,如果为None则使用默认配置
-        """
+        """Initialize the segmenter."""
         self.config = config if config is not None else ApexConfig()
 
-        # 设置随机种子
+        # Set random seed
         self._set_seed(self.config.seed)
 
-        # 设备
+        # Device
         self.device = torch.device(self.config.device)
 
-        # 加载模型
+        # Load models
         print("[APEX-SAM] Initializing...")
         print(f"[APEX-SAM] Device: {self.device}")
 
-        # 加载 DINOv3
+        # Load DINOv3
         self.dino_model = self._load_dinov3()
 
-        # 加载 SAM2
+        # Load SAM
         self.sam2_model = self._load_sam2()
 
         self.hmf = VanillaBBoxPointHMF(
@@ -56,25 +51,17 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         print("[APEX-SAM] Ready")
 
     def _set_seed(self, seed: int):
-        """设置随机种子以保证可复现性"""
+        """Set random seed for reproducibility."""
         np.random.seed(seed)
         torch.manual_seed(seed)
         if torch.cuda.is_available():
             torch.cuda.manual_seed_all(seed)
 
     def _preprocess_image(self, img: np.ndarray) -> np.ndarray:
-        """
-        A1. 预处理图像
-
-        Args:
-            img: 输入图像 (H, W) 或 (H, W, C)
-
-        Returns:
-            归一化后的图像 [0, 1]
-        """
+        """A1. Image preprocessing."""
         img = img.astype(np.float32)
 
-        # 如果是多通道,取平均
+        # Convert multi-channel input to grayscale
         if img.ndim == 3:
             img = img.mean(axis=-1)
 
@@ -91,9 +78,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         return img
 
     def _keep_largest_component(self, mask: np.ndarray) -> np.ndarray:
-        """
-        仅保留掩码中最大的连通区域，去除离散小块
-        """
+        """Keep only the largest connected component."""
         mask_bin = (mask > 0.5).astype(np.uint8)
         labels = measure.label(mask_bin, connectivity=1)
         if labels.max() == 0:
@@ -106,18 +91,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
 
     def _crop_to_content(self, img: np.ndarray, mask: Optional[np.ndarray] = None,
                          margin: int = 2, thresh_ratio: float = 0.01) -> Tuple[np.ndarray, Optional[np.ndarray], Tuple[int, int, int, int]]:
-        """
-        去除四周黑边，返回裁剪后的图像/掩码及 bbox
-
-        Args:
-            img: 输入图像 (H, W)
-            mask: 可选掩码 (H, W)，若提供则优先用掩码定位前景
-            margin: 额外保留的边界像素
-            thresh_ratio: 无掩码时用于判断前景的强度比例阈值
-
-        Returns:
-            img_crop, mask_crop, bbox(x0, y0, x1, y1)
-        """
+        """Crop surrounding black borders and return image/mask/bbox."""
         H, W = img.shape[:2]
         if mask is not None and mask.any():
             ys, xs = np.nonzero(mask > 0.5)
@@ -151,9 +125,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         return x0, y0, x1, y1
 
     def _compute_signed_distance(self, mask: np.ndarray) -> np.ndarray:
-        """
-        计算二值掩码的有符号距离场 (H, W).
-        """
+        """Compute signed distance field of a binary mask."""
         mask_bin = (mask > 0.5).astype(np.uint8)
         Din = distance_transform_edt(mask_bin)
         Dout = distance_transform_edt(1 - mask_bin)
@@ -244,7 +216,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
                 cv2.imwrite(p_bbox, bbox_overlay)
                 debug_dict["viz_paths"].append(p_bbox)
 
-        log("  [B1] SAM2 推理...")
+        log("  [B1] SAM inference...")
         masks, sam_scores, F_sam = self._run_sam2(Iq_norm, P_pos, P_neg, bbox=bbox)
         debug_dict["masks_initial"] = masks
         debug_dict["sam_scores"] = sam_scores
@@ -328,7 +300,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         return fused_mask, debug_dict
 
     def _normalize(self, arr: np.ndarray) -> np.ndarray:
-        """归一化数组到 [0, 1]"""
+        """Normalize array to [0, 1]."""
         arr_min = arr.min()
         arr_max = arr.max()
         if arr_max - arr_min > 1e-8:

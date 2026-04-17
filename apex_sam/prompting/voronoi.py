@@ -12,19 +12,7 @@ from sklearn.cluster import KMeans
 class VoronoiPromptMixin:
     def _sample_points_legacy(self, Pin: np.ndarray, Pband: np.ndarray, Sdino: np.ndarray,
                               Dalign: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        A7. 采样正负点提示（Legacy, 保持原逻辑）
-
-        Args:
-            Pin: 内部先验 (H, W)
-            Pband: 边界带先验 (H, W)
-            Sdino: DINO 相似度 (H, W)
-            Dalign: 对齐距离场 (H, W)
-
-        Returns:
-            P_pos: 正点坐标 (K_pos, 2) - (x, y)
-            P_neg: 负点坐标 (K_neg, 2) - (x, y)
-        """
+        """A7. Legacy positive/negative point sampling."""
         H, W = Pin.shape
 
         # === Positive points ===
@@ -135,16 +123,12 @@ class VoronoiPromptMixin:
 
     def _sample_points(self, Pin: np.ndarray, Pband: np.ndarray, Sdino: np.ndarray,
                        Dalign: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        向后兼容入口：默认使用 legacy 采样
-        """
+        """Backward-compatible entry point using legacy sampling."""
         return self._sample_points_legacy(Pin, Pband, Sdino, Dalign)
 
     def _sample_negative_points(self, Pband: np.ndarray, Sdino: np.ndarray, Dpre: np.ndarray,
                                 Pin: Optional[np.ndarray] = None) -> np.ndarray:
-        """
-        负点采样（紧贴 pre-mask 边界）
-        """
+        """Sample negative points close to the pre-mask boundary."""
         H, W = Pband.shape
         bw = max(1, int(self.config.neg_boundary_width))
         boundary_band = (np.abs(Dpre) <= bw) & (Dpre <= 0)
@@ -218,9 +202,7 @@ class VoronoiPromptMixin:
         slice_id: Optional[int] = None,
         viz_dir: Optional[str] = None,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Voronoi/FPS 正点 + 负点保持原逻辑
-        """
+        """Voronoi/FPS positive sampling with legacy negative sampling."""
         mask = (M_pre > 0.5)
         H, W = mask.shape
         if mask.sum() == 0:

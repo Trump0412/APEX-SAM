@@ -136,12 +136,6 @@ class ApexConfig:
         self.dino_freq_level = 1
         self.dino_freq_mix_ratio = 0.35
         self.dino_freq_mix_mode = "support_high"
-        self.enable_freq_style = False
-        self.freq_style_level = 1
-        self.freq_mix_ratio = 0.35
-        self.freq_mix_mode = "support_high"
-        self.save_freq_viz = False
-        self.freq_style_affect_shape = False
         self.output_root = self.output_root
         self.viz_minimal_only = True
         self.viz_keep_stages = {"support_mask", "query_mask", "pre_mask", "points", "pred_mask", "pred_vs_gt_color"}

@@ -216,7 +216,7 @@ class ChamferMixin:
                 M_pre_roi = work.astype(np.uint8)
             debug["premask_cover"] = cover
 
-        # Snap to query-native closed structure (maup-adapt)
+        # Snap to query-native closed structure
         if bool(self.config.closed_refine_enable):
             Iq_roi = Iq_norm[y0:y1, x0:x1]
             Sdino_roi = Sdino[y0:y1, x0:x1] if Sdino is not None else None

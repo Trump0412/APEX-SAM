@@ -11,16 +11,7 @@ from skimage import measure
 
 class EdgeMixin:
     def _compute_edge_map(self, img: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        A3. 计算查询图像的边缘候选图 (multi-scale LoG + gradient)
-
-        Args:
-            img: 归一化图像 (H, W), [0, 1]
-
-        Returns:
-            E_q: 边缘图 (H, W), [0, 1]
-            E_grad: 梯度幅度图 (H, W)
-        """
+        """Compute query edge candidates using multi-scale LoG + Sobel gradients."""
         # Ensure float32 for OpenCV ops
         img = img.astype(np.float32, copy=False)
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import logging
 import os
 from typing import Any, Dict, Optional, Tuple, List
@@ -7,10 +8,11 @@ from typing import Any, Dict, Optional, Tuple, List
 import cv2
 import numpy as np
 import torch
-from scipy.ndimage import binary_fill_holes
+from scipy.ndimage import binary_fill_holes, distance_transform_edt
 from skimage import measure
 
 from apex_sam.config import ApexConfig
+from apex_sam.hmf.fusion import BranchPrediction, HMFSimpleFusion
 from apex_sam.premask.chamfer import ChamferMixin
 from apex_sam.premask.edges import EdgeMixin
 from apex_sam.premask.structure import StructureMixin
@@ -45,6 +47,12 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
 
         # 加载 SAM2
         self.sam2_model = self._load_sam2()
+
+        self.hmf = HMFSimpleFusion(
+            temperature=float(self.config.hmf_temperature),
+            clip_eps=float(self.config.hmf_clip_eps),
+            prior_bias=float(self.config.hmf_prior_bias),
+        )
 
         print("[APEX-SAM] Ready")
 
@@ -274,6 +282,68 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
                 debug_dict["viz_paths"].append(p_diff)
 
         return M_final, debug_dict
+
+    @staticmethod
+    def _pick_best_mask_prob(masks: List[np.ndarray], scores: List[float], shape: Tuple[int, int]) -> Tuple[np.ndarray, float]:
+        if masks is None or len(masks) == 0:
+            return np.zeros(shape, dtype=np.float32), 0.0
+        index = int(np.argmax(scores)) if scores else 0
+        index = int(np.clip(index, 0, len(masks) - 1))
+        prob = np.asarray(masks[index], dtype=np.float32)
+        if prob.shape != shape:
+            prob = cv2.resize(prob, (shape[1], shape[0]), interpolation=cv2.INTER_LINEAR)
+        score = float(scores[index]) if scores else 0.0
+        return np.clip(prob, 0.0, 1.0), score
+
+    def _prior_branch_confidence(self, prior_mask: np.ndarray, sdino: Optional[np.ndarray]) -> float:
+        prior = (prior_mask > 0.5)
+        if prior.sum() <= 0:
+            return 0.0
+        if sdino is None:
+            return 0.5
+        q = float(np.clip(self.config.dino_gate_quantile, 0.5, 0.99))
+        thr = float(np.quantile(sdino, q))
+        dino_hi = sdino >= thr
+        overlap = float((prior & dino_hi).sum()) / float(prior.sum() + 1e-6)
+        return float(np.clip(overlap, 0.0, 1.0))
+
+    def _run_hmf_branches(
+        self,
+        bundle: Dict[str, Any],
+        P_pos: np.ndarray,
+        P_neg: np.ndarray,
+        debug_dict: Dict[str, Any],
+    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+        Iq_norm = bundle["Iq_norm"]
+        M_pre = bundle["M_pre"]
+        h, w = Iq_norm.shape[:2]
+        bbox = self._compute_fixed_bbox(M_pre, P_pos, Iq_norm.shape, self.config.bbox_size)
+        debug_dict["bbox"] = bbox
+
+        point_masks, point_scores, _ = self._run_sam2(Iq_norm, P_pos, P_neg, bbox=None)
+        point_prob, point_conf = self._pick_best_mask_prob(point_masks, point_scores, (h, w))
+
+        box_masks, box_scores, _ = self._run_sam_box(Iq_norm, bbox)
+        box_prob, box_conf = self._pick_best_mask_prob(box_masks, box_scores, (h, w))
+
+        prior_prob = (M_pre > 0.5).astype(np.float32)
+        prior_conf = self._prior_branch_confidence(prior_prob, bundle.get("Sdino"))
+
+        branch_data = [
+            BranchPrediction(name="point", prob=point_prob, confidence=float(point_conf)),
+            BranchPrediction(name="box", prob=box_prob, confidence=float(box_conf)),
+            BranchPrediction(name="prior", prob=prior_prob, confidence=float(prior_conf)),
+        ]
+
+        fused_mask, fusion_debug = self.hmf.fuse(branch_data)
+        fused_mask = self._keep_largest_component(fused_mask.astype(np.uint8)).astype(np.uint8)
+        debug_dict["hmf"] = fusion_debug
+        debug_dict["hmf_branch_scores"] = {
+            "point": float(point_conf),
+            "box": float(box_conf),
+            "prior": float(prior_conf),
+        }
+        return fused_mask, debug_dict
 
     def _normalize(self, arr: np.ndarray) -> np.ndarray:
         """归一化数组到 [0, 1]"""
@@ -527,17 +597,20 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
             slice_id=slice_id,
             viz_dir=os.path.join(viz_dir, 'task6') if viz_dir else None,
         )
-        M_final, debug = self._run_sam_with_points(
-            bundle=bundle,
-            P_pos=P_pos,
-            P_neg=P_neg,
-            case_id=case_id,
-            slice_id=slice_id,
-            logger=logger,
-            gt_mask=gt_mask,
-            verbose_log=bool(logger is not None),
-            debug_dict=debug,
-        )
+        if bool(self.config.enable_hmf):
+            M_final, debug = self._run_hmf_branches(bundle=bundle, P_pos=P_pos, P_neg=P_neg, debug_dict=debug)
+        else:
+            M_final, debug = self._run_sam_with_points(
+                bundle=bundle,
+                P_pos=P_pos,
+                P_neg=P_neg,
+                case_id=case_id,
+                slice_id=slice_id,
+                logger=logger,
+                gt_mask=gt_mask,
+                verbose_log=bool(logger is not None),
+                debug_dict=debug,
+            )
         return PredictionResult(
             pred_mask=(M_final > 0.5).astype(np.uint8),
             pre_mask=(M_pre > 0.5).astype(np.uint8),

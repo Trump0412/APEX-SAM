@@ -8,9 +8,12 @@ import numpy as np
 
 @dataclass
 class SupportMeta:
-    slice_path: str
-    label_path: str
-    slice_index: int
+    support_id: str = ""
+    case_id: str = ""
+    slice_path: str = ""
+    label_path: str = ""
+    slice_index: int = -1
+    label_value: int | None = None
 
 
 @dataclass

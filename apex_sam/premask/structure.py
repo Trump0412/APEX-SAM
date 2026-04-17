@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, List
 
 import cv2
 import numpy as np
 from scipy import ndimage
 from scipy.ndimage import distance_transform_edt, binary_dilation, binary_fill_holes
 from scipy.spatial import cKDTree
-from skimage import measure
+from skimage import measure, morphology
 
 
 class StructureMixin:

@@ -9,7 +9,9 @@ from .constants import DEFAULT_OUTPUT_ROOT, default_dino_checkpoint, default_din
 
 @dataclass
 class ApexConfig:
+    dataset: str = "CHAOS_MR_T2"
     data_dir: str = ""
+    support_pool_dir: str = ""
     local_db_path: str = ""
     output_root: str = DEFAULT_OUTPUT_ROOT
     max_cases: int = 3
@@ -21,6 +23,10 @@ class ApexConfig:
     force_input_size: int = 256
     bbox_size: int = 112
     prompt_mode: Literal["voronoi"] = "voronoi"
+    enable_hmf: bool = True
+    hmf_temperature: float = 0.15
+    hmf_prior_bias: float = 0.2
+    hmf_clip_eps: float = 1e-4
     enable_dino_freq_fusion: bool = True
     dino_gate_quantile: float = 0.9
     sam_checkpoint: str = field(default_factory=default_sam_checkpoint)
@@ -31,7 +37,6 @@ class ApexConfig:
     save_debug_viz: bool = False
 
     def __post_init__(self) -> None:
-        self.dataset = "CHAOS_MR_T2"
         self.p1 = 1
         self.p99 = 99
         self.tau_in = 8
@@ -143,13 +148,22 @@ class ApexConfig:
     @classmethod
     def from_cli_args(cls, args: Any) -> "ApexConfig":
         return cls(
+            dataset=getattr(args, "dataset", "CHAOS_MR_T2"),
             data_dir=args.data_dir,
+            support_pool_dir=getattr(args, "support_pool_dir", ""),
             local_db_path=args.local_db_path,
             output_root=args.output_root,
             max_cases=args.max_cases,
             max_slices=args.max_slices,
             test_labels=list(args.test_labels),
             retrieval_rank=args.retrieval_rank,
+            retrieval_topk=getattr(args, "retrieval_topk", 5),
+            retrieval_skip_self=getattr(args, "retrieval_skip_self", True),
+            force_input_size=getattr(args, "force_input_size", 256),
+            enable_hmf=getattr(args, "enable_hmf", True),
+            hmf_temperature=getattr(args, "hmf_temperature", 0.15),
+            hmf_prior_bias=getattr(args, "hmf_prior_bias", 0.2),
+            hmf_clip_eps=getattr(args, "hmf_clip_eps", 1e-4),
             sam_checkpoint=args.sam_checkpoint,
             dinov3_checkpoint=args.dinov3_checkpoint,
             dinov3_repo=args.dinov3_repo,

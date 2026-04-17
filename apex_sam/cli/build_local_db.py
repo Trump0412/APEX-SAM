@@ -1,33 +1,42 @@
 from __future__ import annotations
 
+"""
+Backward-compatible wrapper.
+
+The private QAR DB builder is not part of the open-source release.
+This command now builds a public support pool instead.
+"""
+
 import argparse
 
-from apex_sam.constants import default_dino_checkpoint, default_dino_repo
-from apex_sam.retrieval.dino_encoder import DINOEncoder
-from apex_sam.retrieval.local_db import LocalSupportDB
+from apex_sam.cli.build_support_pool import build_support_pool
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description='Build a local DINO descriptor DB for CHAOS-MRI.')
-    parser.add_argument('--data-dir', required=True)
-    parser.add_argument('--local-db-path', required=True)
-    parser.add_argument('--dinov3-checkpoint', default=default_dino_checkpoint())
-    parser.add_argument('--dinov3-repo', default=default_dino_repo())
-    parser.add_argument('--device', default='cuda')
+    parser = argparse.ArgumentParser(
+        description="[Deprecated] Build support resources. This now exports a public support pool instead of private QAR DB."
+    )
+    parser.add_argument("--dataset", default="CHAOS_MR_T2", choices=["CHAOS_MR_T2", "CHAOS_CT", "MSCMR", "MS-CMR", "SATA_CAP"])
+    parser.add_argument("--data-dir", required=True)
+    parser.add_argument("--local-db-path", required=True, help="Deprecated name. Interpreted as support-pool output directory.")
+    parser.add_argument("--labels", type=int, nargs="*", default=[1, 2, 3, 4])
+    parser.add_argument("--max-support-per-label", type=int, default=24)
+    parser.add_argument("--min-mask-area", type=int, default=32)
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
-    encoder = DINOEncoder(
-        checkpoint=args.dinov3_checkpoint,
-        repo=args.dinov3_repo,
-        model_name='dinov3_vitl16',
-        device=args.device,
+    summary = build_support_pool(
+        data_dir=args.data_dir,
+        output_dir=args.local_db_path,
+        dataset=args.dataset,
+        labels=list(args.labels),
+        max_support_per_label=args.max_support_per_label,
+        min_mask_area=args.min_mask_area,
     )
-    out = LocalSupportDB.build(args.data_dir, args.local_db_path, encoder)
-    print(out)
+    print(summary["support_pool_dir"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,86 +1,77 @@
-# APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation
+# APEX-SAM: Training-Free Cross-Domain Few-Shot Medical Segmentation
 
 <div align="center">
 
 [![MICCAI 2026](https://img.shields.io/badge/MICCAI-2026-blue?style=flat-square)](https://miccai.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/Trump0412/APEX-SAM?style=flat-square)](https://github.com/Trump0412/APEX-SAM/stargazers)
-
-**[Project Page](https://trump0412.github.io/APEX-SAM/) · [Paper](https://arxiv.org/abs/PLACEHOLDER)**
+[![Python](https://img.shields.io/badge/Python-3.10%2B-informational?style=flat-square)](pyproject.toml)
 
 </div>
 
----
+APEX-SAM is a **training-free** framework for cross-domain few-shot medical image segmentation.
+It is built around three components from the paper:
 
-## Abstract
+- `QAR`: Quality-Aware Retrieval (private in our internal system)
+- `APM`: Anatomy-Aware Prompt Mining
+- `HMF`: Hybrid Multi-Modal Fusion
 
-Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited.
+## Important Open-Source Scope
 
-We present **APEX-SAM**, a retrieval-augmented framework with three innovations:
-- **QAR** — dual-stream DINO/SigLIP expert bank with diversity-aware selection
-- **APM** — style-aligned geometric matching and anatomy-guided point sampling
-- **HMF** — three SAM branches (point, text, box) fused via training-free feature-consensus weighting
+To protect patient privacy, we **do not release the private QAR database construction pipeline** or its curated internal support bank.
 
-Experiments on three cross-domain benchmarks confirm **+21.1 pp** mean Dice over the strongest training-free baseline.
+This public repository releases:
 
----
+- A reproducible **APM implementation**
+- A reproducible **simplified HMF implementation** (point/box/prior training-free fusion)
+- A public **support-pool interface** so users can provide their own support data
+- Data preprocessing and support-pool construction scripts
 
-## Method Overview
+This means:
 
-![Architecture](assets/images/method/arch_3.png)
+- You can run end-to-end inference with your own support pool.
+- You should **not** expect exact numbers from the full private paper system, because private QAR is not included.
 
-### QAR — Quality-Aware Expert Retrieval
-Builds a hierarchical expert bank by clustering supports via DINO structural keys and greedily selecting entries using a quality-coverage-diversity score. Two-level retrieval routes queries to top-L clusters then re-ranks by multi-modal SigLIP similarity.
+## Method Summary
 
-### APM — Anatomy-Aware Prompt Mining
-Applies Haar DWT style normalization, semantic gating via DINO prototypes, orientation-aware directional Chamfer alignment, and Voronoi-based positive/negative point sampling from morphological priors.
+### QAR (Private)
+Internal dual-stream expert retrieval (DINO/SigLIP) with quality/diversity filtering.
 
-### HMF — Hybrid Multi-Modal Fusion
-Runs SAM3 with three independent branches (geometry points, anatomy text, bounding box) and fuses via reliability-weighted feature consensus — no learned parameters required.
+### APM (Released)
+Style-aligned pre-processing + DINO gating + oriented chamfer alignment + Voronoi-guided prompt mining.
 
----
+### HMF (Released, Simplified)
+Three training-free branches are fused with reliability weighting:
 
-## Results
+- `point` branch
+- `box` branch
+- `prior` branch (APM pre-mask)
 
-### Abd-MRI & Abd-CT (Dice %)
+## Repository Layout
 
-| Method | Ref. | Abd-MRI Mean | Abd-CT Mean |
-|--------|------|:---:|:---:|
-| PANet | ICCV'19 | 32.46 | 31.94 |
-| SSL-ALP | TMI'22 | 63.01 | 47.46 |
-| RPT | MICCAI'23 | 46.91 | 48.28 |
-| PATNet | ECCV'22 | 52.97 | 57.29 |
-| IFA | CVPR'24 | 40.61 | 30.79 |
-| FAMNet | AAAI'25 | 65.79 | 64.75 |
-| MAUP | MICCAI'25 | 67.09 | 67.46 |
-| **APEX-SAM (Ours)** | — | **95.81** | **91.91** |
-
-### Card-MRI (Dice %)
-
-| Method | Ref. | LV-BP | LV-MYO | RV | Mean |
-|--------|------|:---:|:---:|:---:|:---:|
-| PANet | ICCV'19 | 51.42 | 25.75 | 25.75 | 36.66 |
-| FAMNet | AAAI'25 | 86.64 | 51.82 | 76.26 | 71.58 |
-| MAUP | MICCAI'25 | 88.36 | 52.74 | 78.29 | 73.13 |
-| **APEX-SAM (Ours)** | — | **92.75** | **68.41** | **88.23** | **83.13** |
-
-### Ablation Study (Dice %)
-
-| Configuration | QAR | APM | HMF | Memory | Mean Dice |
-|---|:---:|:---:|:---:|:---:|:---:|
-| Prompt-only baseline | ✗ | ✗ | ✗ | — | 72.4 |
-| + QAR | ✓ | ✗ | ✗ | Fixed | 80.2 |
-| + QAR + APM | ✓ | ✓ | ✗ | Fixed | 86.3 |
-| + QAR + APM + HMF | ✓ | ✓ | ✓ | Fixed | 91.8 |
-| **Full (Ours)** | ✓ | ✓ | ✓ | Thresholded | **95.81** |
-
----
-
-## Qualitative Results
-
-![Qualitative and Failure Cases](assets/images/results/qual_failure.png)
-
----
+```text
+apex_sam/
+  cli/
+    eval.py                    # main inference/eval entry
+    preprocess_dataset.py      # dataset normalization script
+    build_support_pool.py      # build user-facing support pool
+  data/
+    normalized.py              # normalized dataset iterator
+    io.py                      # I/O + label remap + resize
+  pipeline/
+    segmenter.py               # APM + simplified HMF core pipeline
+  support/
+    interface.py               # public support-provider protocol
+    filesystem_pool.py         # folder-based support provider
+    private_qar.py             # explicit private-stub placeholder
+  hmf/
+    fusion.py                  # reliability-weighted branch fusion
+  premask/
+  prompting/
+  sam/
+scripts/
+  build_chaos_local_db.sh      # backward-compatible wrapper (now builds support pool)
+  run_chaos_minimal.sh
+```
 
 ## Installation
 
@@ -90,54 +81,139 @@ conda activate apex-sam
 pip install -e .
 ```
 
-Dependencies: `segment_anything`, DINOv3 (local checkout or `torch.hub`).
+## Checkpoints
 
-## Checkpoint Setup
-
-Place checkpoints under `checkpoints/` or override via environment variables:
+By default we read checkpoints from environment variables:
 
 ```bash
-export APEX_SAM_CHECKPOINT=./checkpoints/sam_vit_h_4b8939.pth
-export APEX_DINO_CHECKPOINT=./checkpoints/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
-export APEX_DINO_REPO=./third_party/dinov3
+export APEX_SAM_CHECKPOINT=/path/to/sam_vit_h_4b8939.pth
+export APEX_DINO_CHECKPOINT=/path/to/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
+export APEX_DINO_REPO=/path/to/dinov3_repo
 ```
 
-## Dataset Layout
+You can also pass explicit CLI arguments (`--sam-checkpoint`, `--dinov3-checkpoint`, `--dinov3-repo`).
 
-```
-CHAOS_MR_T2_preprocessed/
-└── normalized/
-    ├── image_000.nii.gz
-    ├── label_000.nii.gz
-    └── ...
-```
+## Datasets Used in This Project
 
-## Build Expert Bank
+| Dataset | Role in project | Access |
+|---|---|---|
+| CHAOS (CT/MR abdominal) | Abd-MRI / Abd-CT experiments | https://chaos.grand-challenge.org/Data/ |
+| MS-CMRSeg 2019 (Cardiac MRI) | Card-MRI experiments | https://zmiclab.github.io/zxh/0/mscmrseg19/data.html |
+| MICCAI 2013 SATA (CAP split) | Additional cross-domain support source in internal experiments | https://masi.vuse.vanderbilt.edu/submission/leaderboard.html |
+
+Notes:
+
+- `MS-CMRSeg` data are available after registration and DUA submission.
+- `SATA CAP` is a legacy challenge dataset; access is organizer-controlled.
+
+## Dataset Preprocessing
+
+Convert your raw image/label NIfTI pairs to the standardized layout:
 
 ```bash
-python -m apex_sam.cli.build_local_db \
+python -m apex_sam.cli.preprocess_dataset \
+  --dataset CHAOS_MR_T2 \
+  --image-dir /path/to/raw/images \
+  --label-dir /path/to/raw/labels \
+  --output-dir /path/to/CHAOS_MR_T2_preprocessed
+```
+
+Supported dataset names:
+
+- `CHAOS_MR_T2`
+- `CHAOS_CT`
+- `MSCMR` / `MS-CMR`
+- `SATA_CAP`
+
+Expected output:
+
+```text
+<output_dir>/
+  normalized/
+    image_000.nii.gz
+    label_000.nii.gz
+    image_001.nii.gz
+    label_001.nii.gz
+    ...
+  preprocess_manifest.json
+```
+
+## Build Public Support Pool (QAR Interface Replacement)
+
+Users provide support examples through a folder-based pool.
+
+Build from a normalized dataset:
+
+```bash
+python -m apex_sam.cli.build_support_pool \
+  --dataset CHAOS_MR_T2 \
   --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --local-db-path /path/to/CHAOS_MR_T2_local_dinov3_db.npz \
-  --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
-  --dinov3-repo $APEX_DINO_REPO \
-  --device cuda
+  --output-dir /path/to/support_pool \
+  --labels 1 2 3 4 \
+  --max-support-per-label 24
+```
+
+Generated format:
+
+```text
+support_pool/
+  support_slices/
+    case_000_slice_015/
+      image.npy
+      mask_label1.npy
+      mask_label2.npy
+      ...
+      meta.json
+  manifest/
+    support_summary.csv
+    summary.json
 ```
 
 ## Run Evaluation
 
 ```bash
 python -m apex_sam.cli.eval \
+  --dataset CHAOS_MR_T2 \
   --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --local-db-path /path/to/CHAOS_MR_T2_local_dinov3_db.npz \
-  --max-cases 3 --max-slices 8 --test-labels 1 --retrieval-rank 2 \
-  --output-root ./outputs \
+  --support-pool-dir /path/to/support_pool \
+  --test-labels 1 2 3 4 \
+  --max-cases 3 \
+  --max-slices 8 \
+  --retrieval-rank 2 \
+  --retrieval-topk 5 \
   --sam-checkpoint $APEX_SAM_CHECKPOINT \
   --dinov3-checkpoint $APEX_DINO_CHECKPOINT \
   --dinov3-repo $APEX_DINO_REPO \
+  --output-root ./outputs \
   --device cuda
 ```
 
----
+Outputs:
+
+- `run_YYYYmmdd_HHMMSS/metrics.csv`
+- `run_YYYYmmdd_HHMMSS/summary.json`
+- `run_YYYYmmdd_HHMMSS/preds/`
+- `run_YYYYmmdd_HHMMSS/overlays/`
+
+## Verified Server Reproduction (Executed)
+
+The open-source pipeline was executed successfully on our remote server with existing preprocessed data and support slices.
+
+Executed examples:
+
+1. Full multi-label smoke run with prepared support bundle
+2. Public support-pool build (`build_support_pool.py`) + inference run (`eval.py`)
+
+Example completed run directories:
+
+- `/root/autodl-tmp/ssb_output/apex_sam_open_release_runs/run_20260417_114904`
+- `/root/autodl-tmp/ssb_output/apex_sam_open_release_runs/run_20260417_115328`
+
+## Reproducibility Notes
+
+- No hard-coded absolute data paths are required in code.
+- QAR private components are intentionally excluded.
+- Simplified HMF is deterministic given fixed seeds and support pool.
 
 ## Citation
 

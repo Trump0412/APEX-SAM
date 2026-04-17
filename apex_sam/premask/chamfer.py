@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+import math
+from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
-from scipy.ndimage import binary_dilation, binary_fill_holes
+from scipy.ndimage import binary_dilation, binary_fill_holes, distance_transform_edt
 from skimage import measure, morphology
 from skimage.segmentation import random_walker
 
@@ -216,11 +217,11 @@ class ChamferMixin:
             debug["premask_cover"] = cover
 
         # Snap to query-native closed structure (maup-adapt)
-            if bool(self.config.closed_refine_enable):
-                Iq_roi = Iq_norm[y0:y1, x0:x1]
-                Sdino_roi = Sdino[y0:y1, x0:x1] if Sdino is not None else None
-                dino_roi = dino_mask[y0:y1, x0:x1] if dino_mask is not None else None
-                M_snap, snap_info = self._snap_to_query_closed_structure(
+        if bool(self.config.closed_refine_enable):
+            Iq_roi = Iq_norm[y0:y1, x0:x1]
+            Sdino_roi = Sdino[y0:y1, x0:x1] if Sdino is not None else None
+            dino_roi = dino_mask[y0:y1, x0:x1] if dino_mask is not None else None
+            M_snap, snap_info = self._snap_to_query_closed_structure(
                 Eq_roi=Eq_roi,
                 M_pre_roi=M_pre_roi,
                 support_has_hole=bool(support_has_hole),

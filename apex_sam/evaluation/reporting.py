@@ -6,8 +6,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Iterable
 
-import cv2
 import numpy as np
+from scipy.ndimage import zoom
+
+try:
+    import cv2  # type: ignore
+except Exception:  # pragma: no cover
+    cv2 = None
 
 
 def create_run_dir(output_root: str) -> str:
@@ -41,7 +46,10 @@ def save_overlay(image: np.ndarray, pred_mask: np.ndarray, gt_mask: np.ndarray, 
         base = base - base.min()
         base = base / (base.max() - base.min() + 1e-8)
         base = (base * 255).astype(np.uint8)
-        base = cv2.cvtColor(base, cv2.COLOR_GRAY2BGR)
+        if cv2 is not None:
+            base = cv2.cvtColor(base, cv2.COLOR_GRAY2BGR)
+        else:
+            base = np.stack([base, base, base], axis=-1)
     pred = pred_mask > 0.5
     gt = gt_mask > 0.5
     tp = pred & gt
@@ -51,5 +59,8 @@ def save_overlay(image: np.ndarray, pred_mask: np.ndarray, gt_mask: np.ndarray, 
     out[tp] = (0, 255, 0)
     out[fp] = (0, 0, 255)
     out[fn] = (255, 0, 0)
-    cv2.imwrite(path, out)
+    if cv2 is not None:
+        cv2.imwrite(path, out)
+    else:
+        np.save(Path(path).with_suffix(".npy"), out.astype(np.uint8))
     return path

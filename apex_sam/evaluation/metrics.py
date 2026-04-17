@@ -3,13 +3,21 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Iterable
 
-import cv2
 import numpy as np
+from scipy.ndimage import zoom
+
+try:
+    import cv2  # type: ignore
+except Exception:  # pragma: no cover - optional in lightweight test env
+    cv2 = None
 
 
 def compute_dice(pred: np.ndarray, gt: np.ndarray) -> float:
     if pred.shape != gt.shape:
-        gt = cv2.resize(gt.astype(np.float32), (pred.shape[1], pred.shape[0]), interpolation=cv2.INTER_NEAREST)
+        if cv2 is None:
+            gt = zoom(gt.astype(np.float32), (pred.shape[0] / gt.shape[0], pred.shape[1] / gt.shape[1]), order=0)
+        else:
+            gt = cv2.resize(gt.astype(np.float32), (pred.shape[1], pred.shape[0]), interpolation=cv2.INTER_NEAREST)
     pred_bin = (pred > 0.5).astype(np.float32)
     gt_bin = (gt > 0.5).astype(np.float32)
     inter = float((pred_bin * gt_bin).sum())

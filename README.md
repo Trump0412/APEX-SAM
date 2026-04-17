@@ -9,11 +9,62 @@
 </div>
 
 APEX-SAM is a **training-free** framework for cross-domain few-shot medical image segmentation.
-It is built around three components from the paper:
 
-- `QAR`: Quality-Aware Retrieval (private in our internal system)
+## Abstract
+
+Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited. We present APEX-SAM, a retrieval-augmented framework with three innovations. QAR builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. APM performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. HMF fuses three SAM branches (point, text, and box prompts) via training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm state-of-the-art performance among training-free methods, with ablations validating each component's contribution.
+
+## Method Overview
+
+![APEX-SAM overview](assets/images/method/arch_3.png)
+
+The full paper pipeline contains three components:
+
+- `QAR`: Quality-Aware Retrieval
 - `APM`: Anatomy-Aware Prompt Mining
 - `HMF`: Hybrid Multi-Modal Fusion
+
+## Main Results (Paper)
+
+### Abd-MRI and Abd-CT (Dice %)
+
+| Method | Ref. | Abd-MRI Mean | Abd-CT Mean |
+|---|---|---:|---:|
+| PANet | ICCV'19 | 32.46 | 31.94 |
+| SSL-ALP | TMI'22 | 63.01 | 47.46 |
+| RPT | MICCAI'23 | 46.91 | 48.28 |
+| PATNet | ECCV'22 | 52.97 | 57.29 |
+| IFA | CVPR'24 | 40.61 | 30.79 |
+| FAMNet | AAAI'25 | 65.79 | 64.75 |
+| MAUP | MICCAI'25 | 67.09 | 67.46 |
+| **APEX-SAM (Ours)** | — | **95.81** | **91.91** |
+
+### Card-MRI (Dice %)
+
+| Method | Ref. | LV-BP | LV-MYO | RV | Mean |
+|---|---|---:|---:|---:|---:|
+| PANet | ICCV'19 | 51.42 | 25.75 | 25.75 | 36.66 |
+| SSL-ALP | TMI'22 | 83.47 | 22.73 | 66.21 | 57.47 |
+| RPT | MICCAI'23 | 60.84 | 42.28 | 57.30 | 53.47 |
+| PATNet | ECCV'22 | 65.35 | 50.63 | 68.34 | 61.44 |
+| IFA | CVPR'24 | 50.43 | 31.32 | 30.74 | 37.50 |
+| FAMNet | AAAI'25 | 86.64 | 51.82 | 76.26 | 71.58 |
+| MAUP | MICCAI'25 | 88.36 | 52.74 | 78.29 | 73.13 |
+| **APEX-SAM (Ours)** | — | **92.75** | **68.41** | **88.23** | **83.13** |
+
+### Ablation (Dice %)
+
+| Configuration | QAR | APM | HMF | Memory Rule | Mean Dice |
+|---|---:|---:|---:|---|---:|
+| Prompt-only baseline | ✗ | ✗ | ✗ | — | 72.4 |
+| + QAR | ✓ | ✗ | ✗ | Fixed | 80.2 |
+| + QAR + APM | ✓ | ✓ | ✗ | Fixed | 86.3 |
+| + QAR + APM + HMF | ✓ | ✓ | ✓ | Fixed | 91.8 |
+| + Full + thresholded append-only (ours) | ✓ | ✓ | ✓ | Thresholded append | **95.81** |
+
+### Qualitative Results
+
+![Qualitative and failure cases](assets/images/results/qual_failure.png)
 
 ## Important Open-Source Scope
 
@@ -30,21 +81,6 @@ This means:
 
 - You can run end-to-end inference with your own support pool.
 - You should **not** expect exact numbers from the full private paper system, because private QAR is not included.
-
-## Method Summary
-
-### QAR (Private)
-Internal dual-stream expert retrieval (DINO/SigLIP) with quality/diversity filtering.
-
-### APM (Released)
-Style-aligned pre-processing + DINO gating + oriented chamfer alignment + Voronoi-guided prompt mining.
-
-### HMF (Released, Simplified)
-Three training-free branches are fused with reliability weighting:
-
-- `point` branch
-- `box` branch
-- `prior` branch (APM pre-mask)
 
 ## Repository Layout
 
@@ -197,23 +233,18 @@ Outputs:
 
 ## Verified Server Reproduction (Executed)
 
-The open-source pipeline was executed successfully on our remote server with existing preprocessed data and support slices.
-
-Executed examples:
-
-1. Full multi-label smoke run with prepared support bundle
-2. Public support-pool build (`build_support_pool.py`) + inference run (`eval.py`)
+The public pipeline was executed successfully on our remote server with existing preprocessed data and support slices.
 
 Example completed run directories:
 
 - `/root/autodl-tmp/ssb_output/apex_sam_open_release_runs/run_20260417_114904`
-- `/root/autodl-tmp/ssb_output/apex_sam_open_release_runs/run_20260417_115328`
+- `/root/autodl-tmp/ssb_output/apex_sam_open_release_runs/run_20260417_115544`
 
 ## Reproducibility Notes
 
 - No hard-coded absolute data paths are required in code.
 - QAR private components are intentionally excluded.
-- Simplified HMF is deterministic given fixed seeds and support pool.
+- The released HMF is simplified and training-free.
 
 ## Citation
 

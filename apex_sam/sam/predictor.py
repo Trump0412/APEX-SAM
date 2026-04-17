@@ -105,15 +105,6 @@ class SAMMaskPredictor:
     ) -> Tuple[List[np.ndarray], List[float], Optional[np.ndarray]]:
         return self._predict(image=image, points_pos=None, points_neg=None, bbox=bbox)
 
-    def predict_with_points_and_box(
-        self,
-        image: np.ndarray,
-        points_pos: np.ndarray,
-        points_neg: np.ndarray,
-        bbox: Tuple[int, int, int, int],
-    ) -> Tuple[List[np.ndarray], List[float], Optional[np.ndarray]]:
-        return self._predict(image=image, points_pos=points_pos, points_neg=points_neg, bbox=bbox)
-
 
 class SamMixin:
     def _load_sam2(self):

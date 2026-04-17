@@ -494,18 +494,7 @@
     <div class="section-intro has-text-centered">
       <p class="section-kicker">Citation</p>
       <h2 class="title is-3 section-title">BibTeX</h2>
-      <p class="section-copy">If you find APEX-SAM useful in your research, please consider citing:</p>
-    </div>
-    <div style="position:relative;">
-      <button class="copy-btn" onclick="copyBib()">Copy</button>
-      <pre id="bib">@inproceedings{apexsam2026,
-  title     = {APEX-SAM: Anatomy-aware Prompting with Expert Retrieval
-               for Training-free Medical Image Segmentation},
-  author    = {Anonymous Authors},
-  booktitle = {Medical Image Computing and Computer Assisted
-               Intervention (MICCAI)},
-  year      = {2026},
-}</pre>
+      <p class="section-copy">coming soon</p>
     </div>
   </div>
 </section>
@@ -524,14 +513,6 @@
 </footer>
 
 <script>
-function copyBib() {
-  var text = document.getElementById('bib').textContent;
-  navigator.clipboard.writeText(text).then(function() {
-    var btn = document.querySelector('.copy-btn');
-    btn.textContent = 'Copied!';
-    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
-  });
-}
 document.querySelectorAll('a[href^="#"]').forEach(function(a) {
   a.addEventListener('click', function(e) {
     var t = document.querySelector(a.getAttribute('href'));

@@ -264,11 +264,4 @@ Outputs are written under `./outputs/run_YYYYmmdd_HHMMSS/`.
 
 ## Citation
 
-```bibtex
-@inproceedings{apexsam2026,
-  title     = {APEX-SAM: Anatomy-aware Prompting with Expert Retrieval for Training-free Medical Image Segmentation},
-  author    = {Anonymous Authors},
-  booktitle = {Medical Image Computing and Computer Assisted Intervention (MICCAI)},
-  year      = {2026},
-}
-```
+`coming soon`

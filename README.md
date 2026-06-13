@@ -1,24 +1,76 @@
-# APEX-SAM: Training-Free Cross-Domain Few-Shot Medical Segmentation
+# APEX-SAM
+
+**APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation**
 
 <div align="center">
 
-[![MICCAI 2026](https://img.shields.io/badge/MICCAI-2026-blue?style=flat-square)](https://miccai.org)
+[![MICCAI 2026](https://img.shields.io/badge/MICCAI-2026-0f766e?style=flat-square)](https://conferences.miccai.org/2026/en/default.asp)
+[![Project Page](https://img.shields.io/badge/Project-Page-1d5fd0?style=flat-square)](https://trump0412.github.io/APEX-SAM/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-informational?style=flat-square)](pyproject.toml)
+[![Citation](https://img.shields.io/badge/Citation-BibTeX-b77720?style=flat-square)](#citation)
 
 </div>
 
-APEX-SAM is a training-free framework for cross-domain few-shot medical image segmentation.
+<p align="center">
+  <b>MICCAI 2026</b>, Strasbourg, France, Sept. 27 - Oct. 1, 2026.
+</p>
 
-## Abstract
+<p align="center">
+  Zhihao Mao, Bangpu Chen, Qi Lei, Jiaqi Tan, Kun Sun<sup>*</sup><br>
+  China University of Geosciences (Wuhan)<br>
+  <sup>*</sup>Corresponding author
+</p>
 
-Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited. We present APEX-SAM, a retrieval-augmented framework with three innovations. QAR builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. APM performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. HMF fuses SAM branches (point, text, and box prompts in the full paper) via training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm strong performance among training-free methods, with ablations validating each component's contribution.
+<p align="center">
+  <a href="https://trump0412.github.io/APEX-SAM/">Project page</a> |
+  <a href="https://github.com/Trump0412/APEX-SAM">Code</a> |
+  <a href="#citation">Citation</a> |
+  Paper coming soon
+</p>
 
-## Method Overview
+APEX-SAM is a training-free framework for cross-domain few-shot medical image segmentation. It combines quality-aware expert retrieval, anatomy-aware prompt mining, and hybrid multi-modal prompt fusion to segment unseen anatomy without parameter updates.
 
 ![APEX-SAM overview](assets/images/method/arch_3.png)
 
-## Main Results (Paper)
+## News
+
+- **MICCAI 2026.** APEX-SAM is a MICCAI 2026 paper at the 29th International Conference on Medical Image Computing and Computer Assisted Intervention, Strasbourg, France.
+- **Code released.** This public repository contains the privacy-aware open-source implementation with APM, vanilla HMF, preprocessing, inference, evaluation, scripts, and tests.
+- **Paper metadata pending.** The final PDF, DOI, LNCS volume, and page numbers will be added after official publication.
+
+## Abstract
+
+Training-free cross-domain few-shot medical image segmentation aims to segment unseen anatomies without parameter updates, addressing the high cost of dense annotation and domain-specific fine-tuning in clinical practice. Existing support-driven prompting methods face three limitations: support exemplars are randomly selected without quality assurance, geometric alignment is poorly modeled, and multi-modal prompt capabilities remain underexploited.
+
+We present **APEX-SAM**, a retrieval-augmented framework with three innovations. **QAR** builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. **APM** performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. **HMF** fuses SAM prompt branches through training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm strong performance among training-free methods, with ablations validating each component's contribution.
+
+## Highlights
+
+- **Training-free inference:** no parameter update or task-specific fine-tuning is required at test time.
+- **Quality-aware retrieval:** expert support candidates are selected by compatibility, coverage, and diversity instead of random sampling.
+- **Anatomy-aware prompting:** support-query alignment and morphological priors provide robust point and box prompts.
+- **Hybrid prompt fusion:** multiple SAM branches are combined by training-free feature consensus.
+- **Privacy-aware release:** private medical data and expert database contents are not redistributed.
+
+## Open-Source Scope
+
+This repository is a public, privacy-aware implementation package. It does **not** include private medical data or the private expert database used in the paper.
+
+Released:
+
+- Module-2 **APM** implementation.
+- Module-3 **HMF** vanilla bbox + point implementation.
+- Preprocessing, inference, evaluation, metrics, configs, tests, and shell scripts.
+- Single-query inference with one externally selected support pair.
+
+Placeholder or user-provided:
+
+- Module-1 **QAR** is kept as file-level placeholders in the public repository.
+- DINO/SigLIP-based expert database assets should be built by users under `expert_database/`.
+- SAM-compatible checkpoints, DINO/SigLIP weights, and medical datasets must be downloaded according to their own licenses.
+
+## Main Results
 
 ### Abd-MRI and Abd-CT (Dice %)
 
@@ -31,7 +83,7 @@ Training-free cross-domain few-shot medical image segmentation aims to segment u
 | IFA | CVPR'24 | 40.61 | 30.79 |
 | FAMNet | AAAI'25 | 65.79 | 64.75 |
 | MAUP | MICCAI'25 | 67.09 | 67.46 |
-| **APEX-SAM (Ours)** | — | **95.81** | **91.91** |
+| **APEX-SAM (Ours)** | **MICCAI'26** | **95.81** | **91.91** |
 
 ### Card-MRI (Dice %)
 
@@ -44,37 +96,21 @@ Training-free cross-domain few-shot medical image segmentation aims to segment u
 | IFA | CVPR'24 | 50.43 | 31.32 | 30.74 | 37.50 |
 | FAMNet | AAAI'25 | 86.64 | 51.82 | 76.26 | 71.58 |
 | MAUP | MICCAI'25 | 88.36 | 52.74 | 78.29 | 73.13 |
-| **APEX-SAM (Ours)** | — | **92.75** | **68.41** | **88.23** | **83.13** |
+| **APEX-SAM (Ours)** | **MICCAI'26** | **92.75** | **68.41** | **88.23** | **83.13** |
 
 ### Ablation (Dice %)
 
 | Configuration | QAR | APM | HMF | Memory Rule | Mean Dice |
 |---|---:|---:|---:|---|---:|
-| Prompt-only baseline | ✗ | ✗ | ✗ | — | 72.4 |
-| + QAR | ✓ | ✗ | ✗ | Fixed | 80.2 |
-| + QAR + APM | ✓ | ✓ | ✗ | Fixed | 86.3 |
-| + QAR + APM + HMF | ✓ | ✓ | ✓ | Fixed | 91.8 |
-| + Full + thresholded append-only (ours) | ✓ | ✓ | ✓ | Thresholded append | **95.81** |
+| Prompt-only baseline | No | No | No | - | 72.4 |
+| + QAR | Yes | No | No | Fixed | 80.2 |
+| + QAR + APM | Yes | Yes | No | Fixed | 86.3 |
+| + QAR + APM + HMF | Yes | Yes | Yes | Fixed | 91.8 |
+| + Full + thresholded append-only (ours) | Yes | Yes | Yes | Thresholded append | **95.81** |
 
-### Qualitative Results
+## Qualitative Results
 
 ![Qualitative and failure cases](assets/images/results/qual_failure.png)
-
-## Open-Source Scope
-
-To protect medical data privacy, this repository does not include the private expert database content.
-
-What is released:
-
-- **Module-2 (APM)**: open-source implementation.
-- **Module-3 (HMF)**: open-source **vanilla bbox + point** implementation.
-- **Inference/Eval path**: accepts one externally selected support pair.
-
-What is placeholder-only:
-
-- **Module-1** is kept as file-level placeholders only.
-
-You can build your own Module-1 with DINOv3 + SigLIP and place assets under `expert_database/`, then pass the selected support to this open-source inference pipeline.
 
 ## Repository Layout
 
@@ -86,20 +122,23 @@ apex_sam/
     inference.py               # single-case inference with one support
     eval.py                    # dataset evaluation with one selected support
   module1_qar/
-    build_expert_database.py   # empty placeholder
-    retrieve_support_rank2.py  # empty placeholder
+    build_expert_database.py   # placeholder
+    retrieve_support_rank2.py  # placeholder
   pipeline/
-    segmenter.py               # APM + vanilla HMF core pipeline
+    segmenter.py               # APM + vanilla HMF pipeline
   hmf/
-    fusion.py                  # bbox+point vanilla fusion
+    fusion.py                  # bbox + point vanilla fusion
   premask/
   prompting/
   sam/
+assets/
+  images/                      # project-page figures and result images
 expert_database/               # user-managed expert database assets
 scripts/
   module1_qar_placeholder.sh
   run_single_inference.sh
   run_chaos_eval.sh
+tests/
 ```
 
 ## Setup
@@ -113,15 +152,15 @@ conda activate apex-sam
 pip install -e .
 ```
 
-## Start
+## Model Repositories and Weights
 
-### 1) Download model repos
+Create a local directory for external model repositories:
 
 ```bash
 mkdir -p third_party
 cd third_party
 
-# SAM3
+# SAM backend
 git clone https://github.com/facebookresearch/sam3.git
 
 # DINOv3
@@ -131,13 +170,13 @@ git clone https://github.com/facebookresearch/dinov3.git
 git clone https://github.com/google-research/big_vision.git
 ```
 
-### 2) Download weights
+Download checkpoints according to the license and access rules of each model:
 
 ```bash
-# Hugging Face login (needed for gated models, e.g. SAM3)
+# Hugging Face login may be needed for gated models
 hf auth login
 
-# SAM3 / SAM3.1 (gated)
+# SAM3 / SAM3.1
 huggingface-cli download facebook/sam3 --local-dir ./checkpoints/sam3
 huggingface-cli download facebook/sam3.1 --local-dir ./checkpoints/sam3_1
 
@@ -158,7 +197,9 @@ export APEX_DINO_REPO=/absolute/path/to/third_party/dinov3
 
 Use a checkpoint format that matches your installed SAM backend.
 
-### 3) Prepare expert database directory and selected support
+## Prepare Data and Support Items
+
+The public code expects preprocessed slices and an externally selected support item:
 
 ```text
 expert_database/
@@ -171,7 +212,14 @@ support_item/
   ...
 ```
 
-## Datasets
+Supported dataset names for preprocessing:
+
+- `CHAOS_MR_T2`
+- `CHAOS_CT`
+- `MSCMR` / `MS-CMR`
+- `SATA_CAP`
+
+Dataset links:
 
 | Dataset | Usage | Link |
 |---|---|---|
@@ -189,12 +237,15 @@ python -m apex_sam.cli.preprocess_dataset \
   --output-dir /path/to/CHAOS_MR_T2_preprocessed
 ```
 
-Supported `--dataset` values:
+Equivalent console script:
 
-- `CHAOS_MR_T2`
-- `CHAOS_CT`
-- `MSCMR` / `MS-CMR`
-- `SATA_CAP`
+```bash
+apex-sam-preprocess \
+  --dataset CHAOS_MR_T2 \
+  --image-dir /path/to/raw/images \
+  --label-dir /path/to/raw/labels \
+  --output-dir /path/to/CHAOS_MR_T2_preprocessed
+```
 
 ## Inference
 
@@ -208,7 +259,7 @@ python -m apex_sam.cli.inference \
 
 Output defaults to `./outputs/inference_pred.npy`.
 
-If you want a custom output path:
+Custom output path:
 
 ```bash
 python -m apex_sam.cli.inference \
@@ -217,20 +268,17 @@ python -m apex_sam.cli.inference \
   --output-mask-path ./outputs/query_pred.npy
 ```
 
-Full-set inference after Module-1 is implemented and configured:
+Equivalent console script:
 
 ```bash
-python -m apex_sam.cli.eval \
-  --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --expert-database-dir /path/to/expert_database \
-  --support-item-dir /path/to/support_item
+apex-sam-infer \
+  --support-item-dir /path/to/support_item \
+  --query-image-path /path/to/query_slice.npy
 ```
 
-Predictions are saved under `./outputs/run_YYYYmmdd_HHMMSS/preds/`.
+## Evaluation
 
-## Eval
-
-Full-set test after Module-1 is implemented and configured:
+Full-set evaluation after Module-1 support selection is implemented or externally prepared:
 
 ```bash
 python -m apex_sam.cli.eval \
@@ -249,7 +297,7 @@ This command uses defaults:
 - `case_dice_threshold=0.1`
 - `output_root=./outputs`
 
-For a quick smoke eval:
+Quick smoke evaluation:
 
 ```bash
 python -m apex_sam.cli.eval \
@@ -262,6 +310,45 @@ python -m apex_sam.cli.eval \
 
 Outputs are written under `./outputs/run_YYYYmmdd_HHMMSS/`.
 
+## Tests
+
+```bash
+pip install -e .
+pytest
+```
+
+The included tests cover configuration loading, metrics, CLI smoke behavior, and placeholder Module-1 behavior.
+
+## What Is Still Pending
+
+- Add the final paper PDF/arXiv link when public.
+- Add DOI, LNCS volume, and page range after Springer publication.
+- Add final camera-ready BibTeX if the proceedings metadata differs from the current MICCAI 2026 entry.
+- Add optional expert-database construction examples if redistributable assets become available.
+- Add checkpoint-specific notes once the intended SAM backend and public weights are finalized.
+
 ## Citation
 
-`coming soon`
+MICCAI-style text citation:
+
+```text
+Mao, Z., Chen, B., Lei, Q., Tan, J., Sun, K.: APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation. In: Medical Image Computing and Computer Assisted Intervention - MICCAI 2026. Lecture Notes in Computer Science. Springer, Cham (2026).
+```
+
+BibTeX:
+
+```bibtex
+@inproceedings{mao2026apexsam,
+  title     = {APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation},
+  author    = {Mao, Zhihao and Chen, Bangpu and Lei, Qi and Tan, Jiaqi and Sun, Kun},
+  booktitle = {Medical Image Computing and Computer Assisted Intervention -- MICCAI 2026},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  address   = {Cham},
+  year      = {2026}
+}
+```
+
+## License
+
+This project is released under the MIT License. See [LICENSE](LICENSE).

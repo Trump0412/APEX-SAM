@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: "If you use APEX-SAM in your research, please cite the MICCAI 2026 paper."
+title: "APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation"
+type: software
+authors:
+  - family-names: Mao
+    given-names: Zhihao
+    affiliation: "China University of Geosciences (Wuhan)"
+  - family-names: Chen
+    given-names: Bangpu
+    affiliation: "China University of Geosciences (Wuhan)"
+  - family-names: Lei
+    given-names: Qi
+    affiliation: "China University of Geosciences (Wuhan)"
+  - family-names: Tan
+    given-names: Jiaqi
+    affiliation: "China University of Geosciences (Wuhan)"
+  - family-names: Sun
+    given-names: Kun
+    affiliation: "China University of Geosciences (Wuhan)"
+license: MIT
+repository-code: "https://github.com/Trump0412/APEX-SAM"
+url: "https://trump0412.github.io/APEX-SAM/"
+preferred-citation:
+  type: conference-paper
+  title: "APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation"
+  authors:
+    - family-names: Mao
+      given-names: Zhihao
+      affiliation: "China University of Geosciences (Wuhan)"
+    - family-names: Chen
+      given-names: Bangpu
+      affiliation: "China University of Geosciences (Wuhan)"
+    - family-names: Lei
+      given-names: Qi
+      affiliation: "China University of Geosciences (Wuhan)"
+    - family-names: Tan
+      given-names: Jiaqi
+      affiliation: "China University of Geosciences (Wuhan)"
+    - family-names: Sun
+      given-names: Kun
+      affiliation: "China University of Geosciences (Wuhan)"
+  conference: "29th International Conference on Medical Image Computing and Computer Assisted Intervention (MICCAI 2026), Strasbourg, France"
+  collection-title: "Medical Image Computing and Computer Assisted Intervention -- MICCAI 2026"
+  publisher: "Springer"
+  year: 2026
+  notes: "MICCAI 2026."

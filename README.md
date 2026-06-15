@@ -25,8 +25,7 @@
 <p align="center">
   <a href="https://trump0412.github.io/APEX-SAM/">Project page</a> |
   <a href="https://github.com/Trump0412/APEX-SAM">Code</a> |
-  <a href="#citation">Citation</a> |
-  Paper coming soon
+  <a href="#citation">Citation</a>
 </p>
 
 APEX-SAM is a training-free framework for cross-domain few-shot medical image segmentation. It combines quality-aware expert retrieval, anatomy-aware prompt mining, and hybrid multi-modal prompt fusion to segment unseen anatomy without parameter updates.
@@ -36,8 +35,8 @@ APEX-SAM is a training-free framework for cross-domain few-shot medical image se
 ## News
 
 - **MICCAI 2026.** APEX-SAM is a MICCAI 2026 paper at the 29th International Conference on Medical Image Computing and Computer Assisted Intervention, Strasbourg, France.
-- **Code released.** This public repository contains the privacy-aware open-source implementation with APM, vanilla HMF, preprocessing, inference, evaluation, scripts, and tests.
-- **Paper metadata pending.** The final PDF, DOI, LNCS volume, and page numbers will be added after official publication.
+- **Public code.** This repository provides the APM/HMF inference pipeline, preprocessing utilities, evaluation scripts, metrics, tests, and project page assets.
+- **Publication metadata.** The paper URL, DOI, LNCS volume, and page numbers will be added after publication.
 
 ## Abstract
 
@@ -45,30 +44,23 @@ Training-free cross-domain few-shot medical image segmentation aims to segment u
 
 We present **APEX-SAM**, a retrieval-augmented framework with three innovations. **QAR** builds a dual-stream DINO/SigLIP expert bank with diversity-aware selection to ensure support-query compatibility. **APM** performs style-aligned geometric matching and anatomy-guided point sampling from morphological priors. **HMF** fuses SAM prompt branches through training-free feature-consensus weighting. Experiments on three cross-domain benchmarks confirm strong performance among training-free methods, with ablations validating each component's contribution.
 
-## Highlights
+## What Is Released
 
-- **Training-free inference:** no parameter update or task-specific fine-tuning is required at test time.
-- **Quality-aware retrieval:** expert support candidates are selected by compatibility, coverage, and diversity instead of random sampling.
-- **Anatomy-aware prompting:** support-query alignment and morphological priors provide robust point and box prompts.
-- **Hybrid prompt fusion:** multiple SAM branches are combined by training-free feature consensus.
-- **Privacy-aware release:** private medical data and expert database contents are not redistributed.
+This repository contains the public APEX-SAM inference and evaluation code. Restricted medical data, trained/external model weights, and the expert database used by the paper are not redistributed.
 
-## Open-Source Scope
+Included:
 
-This repository is a public, privacy-aware implementation package. It does **not** include private medical data or the private expert database used in the paper.
+- APM implementation for style normalization, structure matching, pre-mask generation, and prompt sampling.
+- HMF implementation for bbox and point prompt branches.
+- DINOv3 feature extraction wrapper and SAM backend adapter.
+- Preprocessing, single-case inference, full-set evaluation, metrics, configs, tests, and shell scripts.
+- GitHub Pages project site assets and citation metadata.
 
-Released:
+User-provided:
 
-- Module-2 **APM** implementation.
-- Module-3 **HMF** vanilla bbox + point implementation.
-- Preprocessing, inference, evaluation, metrics, configs, tests, and shell scripts.
-- Single-query inference with one externally selected support pair.
-
-Placeholder or user-provided:
-
-- Module-1 **QAR** is kept as file-level placeholders in the public repository.
-- DINO/SigLIP-based expert database assets should be built by users under `expert_database/`.
-- SAM-compatible checkpoints, DINO/SigLIP weights, and medical datasets must be downloaded according to their own licenses.
+- Medical datasets, following each dataset license.
+- SAM-compatible checkpoint and DINOv3 checkpoint.
+- Optional external support/expert database. Public inference accepts a selected support item directly.
 
 ## Main Results
 
@@ -108,34 +100,31 @@ Placeholder or user-provided:
 | + QAR + APM + HMF | Yes | Yes | Yes | Fixed | 91.8 |
 | + Full + thresholded append-only (ours) | Yes | Yes | Yes | Thresholded append | **95.81** |
 
-## Qualitative Results
-
-![Qualitative and failure cases](assets/images/results/qual_failure.png)
-
 ## Repository Layout
 
 ```text
 apex_sam/
   cli/
-    build_expert_database.py   # Module-1 placeholder CLI
     preprocess_dataset.py      # dataset preprocessing
-    inference.py               # single-case inference with one support
-    eval.py                    # dataset evaluation with one selected support
-  module1_qar/
-    build_expert_database.py   # placeholder
-    retrieve_support_rank2.py  # placeholder
-  pipeline/
-    segmenter.py               # APM + vanilla HMF pipeline
-  hmf/
-    fusion.py                  # bbox + point vanilla fusion
-  premask/
+    inference.py               # single-case inference with one support item
+    eval.py                    # dataset evaluation with one selected support item
+  data/                        # normalized data loading and label remapping
+  retrieval/
+    dino_encoder.py            # DINOv3 feature extraction and frequency mixing
+  premask/                     # structure maps, chamfer matching, pre-mask refinement
   prompting/
+    voronoi.py                 # positive/negative point sampling
+  pipeline/
+    segmenter.py               # APM + HMF segmentation pipeline
+  hmf/
+    fusion.py                  # bbox/point HMF fusion
   sam/
-assets/
-  images/                      # project-page figures and result images
-expert_database/               # user-managed expert database assets
+    predictor.py               # SAM backend adapter
+assets/images/                 # project-page figures and result images
+checkpoints/                   # local checkpoint notes
+configs/                       # example configs
+expert_database/               # optional user-managed support assets
 scripts/
-  module1_qar_placeholder.sh
   run_single_inference.sh
   run_chaos_eval.sh
 tests/
@@ -152,6 +141,14 @@ conda activate apex-sam
 pip install -e .
 ```
 
+Run the lightweight tests:
+
+```bash
+PYTHONPATH=. PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 pytest
+```
+
+`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1` is optional, but it avoids unrelated global pytest plugins from affecting the test run.
+
 ## Model Repositories and Weights
 
 Create a local directory for external model repositories:
@@ -160,14 +157,8 @@ Create a local directory for external model repositories:
 mkdir -p third_party
 cd third_party
 
-# SAM backend
-git clone https://github.com/facebookresearch/sam3.git
-
 # DINOv3
 git clone https://github.com/facebookresearch/dinov3.git
-
-# SigLIP reference code
-git clone https://github.com/google-research/big_vision.git
 ```
 
 Download checkpoints according to the license and access rules of each model:
@@ -176,35 +167,39 @@ Download checkpoints according to the license and access rules of each model:
 # Hugging Face login may be needed for gated models
 hf auth login
 
-# SAM3 / SAM3.1
-huggingface-cli download facebook/sam3 --local-dir ./checkpoints/sam3
-huggingface-cli download facebook/sam3.1 --local-dir ./checkpoints/sam3_1
+# SAM ViT-H
+wget -P ./checkpoints https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
 # DINOv3 ViT-L/16
 huggingface-cli download facebook/dinov3-vitl16-pretrain-lvd1689m --local-dir ./checkpoints/dinov3_vitl16
-
-# SigLIP SO400M
-huggingface-cli download google/siglip-so400m-patch14-384 --local-dir ./checkpoints/siglip_so400m
 ```
 
 Set paths for this repository:
 
 ```bash
-export APEX_SAM_CHECKPOINT=/absolute/path/to/your_sam_checkpoint
+export APEX_SAM_CHECKPOINT=/absolute/path/to/sam_vit_h_4b8939.pth
 export APEX_DINO_CHECKPOINT=/absolute/path/to/your_dinov3_checkpoint
 export APEX_DINO_REPO=/absolute/path/to/third_party/dinov3
 ```
 
-Use a checkpoint format that matches your installed SAM backend.
+Use `--device cpu` for smoke tests on machines without CUDA. Full evaluation is expected to run on GPU.
 
-## Prepare Data and Support Items
+## Data and Support Item Format
 
-The public code expects preprocessed slices and an externally selected support item:
+The preprocessing command writes normalized NIfTI files under:
 
 ```text
-expert_database/
-  ... your externally built assets ...
+CHAOS_MR_T2_preprocessed/
+  normalized/
+    image_000.nii.gz
+    label_000.nii.gz
+    image_001.nii.gz
+    label_001.nii.gz
+```
 
+Single-case inference and evaluation also need a selected support item:
+
+```text
 support_item/
   image.npy
   mask_label1.npy
@@ -212,7 +207,9 @@ support_item/
   ...
 ```
 
-Supported dataset names for preprocessing:
+`image.npy` is a 2D support slice. Each `mask_label{label}.npy` is a binary mask for one target label.
+
+Supported dataset names:
 
 - `CHAOS_MR_T2`
 - `CHAOS_CT`
@@ -247,19 +244,7 @@ apex-sam-preprocess \
   --output-dir /path/to/CHAOS_MR_T2_preprocessed
 ```
 
-## Inference
-
-Single query with one selected support pair:
-
-```bash
-python -m apex_sam.cli.inference \
-  --support-item-dir /path/to/support_item \
-  --query-image-path /path/to/query_slice.npy
-```
-
-Output defaults to `./outputs/inference_pred.npy`.
-
-Custom output path:
+## Single-Case Inference
 
 ```bash
 python -m apex_sam.cli.inference \
@@ -273,24 +258,25 @@ Equivalent console script:
 ```bash
 apex-sam-infer \
   --support-item-dir /path/to/support_item \
-  --query-image-path /path/to/query_slice.npy
+  --query-image-path /path/to/query_slice.npy \
+  --output-mask-path ./outputs/query_pred.npy
 ```
 
-## Evaluation
+The output is a binary NumPy mask at `--output-mask-path`.
 
-Full-set evaluation after Module-1 support selection is implemented or externally prepared:
+## Evaluation
 
 ```bash
 python -m apex_sam.cli.eval \
   --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --expert-database-dir /path/to/expert_database \
-  --support-item-dir /path/to/support_item
+  --support-item-dir /path/to/support_item \
+  --output-root ./outputs
 ```
 
-This command uses defaults:
+Defaults:
 
 - `dataset=CHAOS_MR_T2`
-- `test_labels` auto-detected from `support_item` (`mask_label*.npy`)
+- `test_labels` auto-detected from `support_item/mask_label*.npy`
 - `max_cases=-1` (all cases)
 - `max_slices=-1` (all valid slices)
 - `eval_protocol=case_max_filtered`
@@ -302,34 +288,40 @@ Quick smoke evaluation:
 ```bash
 python -m apex_sam.cli.eval \
   --data-dir /path/to/CHAOS_MR_T2_preprocessed \
-  --expert-database-dir /path/to/expert_database \
   --support-item-dir /path/to/support_item \
   --max-cases 3 \
   --max-slices 8
 ```
 
-Outputs are written under `./outputs/run_YYYYmmdd_HHMMSS/`.
+Outputs are written under:
 
-## Tests
-
-```bash
-pip install -e .
-pytest
+```text
+outputs/run_YYYYmmdd_HHMMSS/
+  run.log
+  metrics.csv
+  case_metrics.csv
+  summary.json
+  preds/
+  overlays/
 ```
 
-The included tests cover configuration loading, metrics, CLI smoke behavior, and placeholder Module-1 behavior.
+## Reproducibility Checklist
 
-## What Is Still Pending
+From a fresh clone, a user should be able to reproduce the public pipeline as follows:
 
-- Add the final paper PDF/arXiv link when public.
-- Add DOI, LNCS volume, and page range after Springer publication.
-- Add final camera-ready BibTeX if the proceedings metadata differs from the current MICCAI 2026 entry.
-- Add optional expert-database construction examples if redistributable assets become available.
-- Add checkpoint-specific notes once the intended SAM backend and public weights are finalized.
+1. Install the package with `pip install -e .`.
+2. Download SAM and DINOv3 resources, then set `APEX_SAM_CHECKPOINT`, `APEX_DINO_CHECKPOINT`, and `APEX_DINO_REPO`.
+3. Download a supported dataset according to its license.
+4. Run `apex-sam-preprocess` to create the normalized dataset folder.
+5. Prepare one selected support item with `image.npy` and `mask_label{label}.npy`.
+6. Run `apex-sam-infer` for a single query or `apex-sam-eval` for a dataset split.
+7. Inspect `summary.json`, `metrics.csv`, `case_metrics.csv`, predictions, and overlays under `outputs/`.
+
+The exact paper numbers depend on the paper's support retrieval database and experimental split settings. The public repository reproduces the released inference/evaluation path with user-provided support items.
 
 ## Citation
 
-MICCAI-style text citation:
+Text citation:
 
 ```text
 Mao, Z., Chen, B., Lei, Q., Tan, J., Sun, K.: APEX-SAM: Anatomy-Aware Prompting with Expert Retrieval for Training-Free Medical Image Segmentation. In: Medical Image Computing and Computer Assisted Intervention - MICCAI 2026. Lecture Notes in Computer Science. Springer, Cham (2026).

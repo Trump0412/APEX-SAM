@@ -1,3 +1,3 @@
-from apex_sam.hmf.fusion import BranchPrediction, VanillaBBoxPointHMF
+from apex_sam.hmf.fusion import BBoxPointHMF, BranchPrediction
 
-__all__ = ["BranchPrediction", "VanillaBBoxPointHMF"]
+__all__ = ["BBoxPointHMF", "BranchPrediction"]

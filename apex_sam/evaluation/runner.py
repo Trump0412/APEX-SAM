@@ -118,7 +118,7 @@ def run_evaluation(config: ApexConfig) -> RunSummary:
     logger.info("Run directory: %s", run_dir)
 
     if config.expert_database_dir:
-        logger.info("Expert database path (Module-1 placeholder): %s", config.expert_database_dir)
+        logger.info("External expert database path: %s", config.expert_database_dir)
 
     segmenter = ApexSegmenter(config)
     records: list[dict[str, Any]] = []

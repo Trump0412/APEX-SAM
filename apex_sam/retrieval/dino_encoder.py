@@ -47,9 +47,10 @@ class DINOEncoder:
             print('[DINOv3] Model loaded')
             return model
         except Exception as exc:
-            print(f'[DINOv3] Load failed: {exc}')
-            print('[DINOv3] Using stub encoder')
-            return None
+            raise RuntimeError(
+                "Failed to load DINOv3. Set APEX_DINO_CHECKPOINT and APEX_DINO_REPO "
+                "or pass --dinov3-checkpoint and --dinov3-repo."
+            ) from exc
 
     def preprocess(self, img: np.ndarray) -> np.ndarray:
         img = img.astype(np.float32)
@@ -63,8 +64,7 @@ class DINOEncoder:
     def extract_features(self, img: np.ndarray) -> np.ndarray:
         img = self.preprocess(img)
         if self.model is None:
-            h, w = img.shape
-            return np.random.randn(h, w, 64).astype(np.float32)
+            raise RuntimeError("DINOv3 backend is not initialized.")
         img_rgb = np.stack([img, img, img], axis=-1)
         img_resized = cv2.resize(img_rgb, (self.dino_size, self.dino_size))
         mean = np.array([0.485, 0.456, 0.406])

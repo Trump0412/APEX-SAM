@@ -10,9 +10,9 @@ from sklearn.cluster import KMeans
 
 
 class VoronoiPromptMixin:
-    def _sample_points_legacy(self, Pin: np.ndarray, Pband: np.ndarray, Sdino: np.ndarray,
-                              Dalign: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """A7. Legacy positive/negative point sampling."""
+    def _sample_points_fallback(self, Pin: np.ndarray, Pband: np.ndarray, Sdino: np.ndarray,
+                                Dalign: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """Fallback positive/negative point sampling."""
         H, W = Pin.shape
 
         # === Positive points ===
@@ -197,11 +197,11 @@ class VoronoiPromptMixin:
         slice_id: Optional[int] = None,
         viz_dir: Optional[str] = None,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Voronoi/FPS positive sampling with legacy negative sampling."""
+        """Voronoi/FPS positive sampling with boundary-aware negative sampling."""
         mask = (M_pre > 0.5)
         H, W = mask.shape
         if mask.sum() == 0:
-            return self._sample_points_legacy(Pin_pre, Pband_pre, Sdino, Dpre)
+            return self._sample_points_fallback(Pin_pre, Pband_pre, Sdino, Dpre)
 
         D_in = distance_transform_edt(mask)
         if self.config.use_distance_transform:
@@ -215,7 +215,7 @@ class VoronoiPromptMixin:
         if self.config.candidate_downsample > 1 and len(coords_yx) > 0:
             coords_yx = coords_yx[:: int(self.config.candidate_downsample)]
         if len(coords_yx) == 0:
-            return self._sample_points_legacy(Pin_pre, Pband_pre, Sdino, Dpre)
+            return self._sample_points_fallback(Pin_pre, Pband_pre, Sdino, Dpre)
 
         # FPS seed selection
         y0, x0 = np.unravel_index(np.argmax(D_in * interior), D_in.shape)
@@ -276,7 +276,7 @@ class VoronoiPromptMixin:
                     break
 
         if len(P_pos) == 0:
-            P_pos = self._sample_points_legacy(Pin_pre, Pband_pre, Sdino, Dpre)[0]
+            P_pos = self._sample_points_fallback(Pin_pre, Pband_pre, Sdino, Dpre)[0]
         else:
             P_pos = np.array(P_pos[: self.config.K_pos], dtype=np.int32)
 

@@ -25,9 +25,10 @@ class SAMMaskPredictor:
             print("[SAM] Model loaded")
             return predictor
         except Exception as exc:
-            print(f"[SAM] Load failed: {exc}")
-            print("[SAM] Using stub predictor")
-            return None
+            raise RuntimeError(
+                "Failed to load the SAM ViT-H backend. Install segment-anything and "
+                "set APEX_SAM_CHECKPOINT or --sam-checkpoint to a valid checkpoint."
+            ) from exc
 
     @staticmethod
     def _sanitize_box(bbox: Tuple[int, int, int, int], h: int, w: int) -> np.ndarray:
@@ -51,8 +52,7 @@ class SAMMaskPredictor:
     ) -> Tuple[List[np.ndarray], List[float], Optional[np.ndarray]]:
         h, w = image.shape[:2]
         if self.predictor is None:
-            random_mask = (np.random.rand(h, w) > 0.5).astype(np.float32)
-            return [random_mask], [0.5], None
+            raise RuntimeError("SAM backend is not initialized.")
 
         img_uint8 = (np.clip(image, 0.0, 1.0) * 255).astype(np.uint8)
         img_rgb = np.stack([img_uint8, img_uint8, img_uint8], axis=-1)
@@ -107,11 +107,11 @@ class SAMMaskPredictor:
 
 
 class SamMixin:
-    def _load_sam2(self):
-        self.sam_backend = SAMMaskPredictor(self.config.sam2_checkpoint, self.config.device)
+    def _load_sam(self):
+        self.sam_backend = SAMMaskPredictor(self.config.sam_checkpoint, self.config.device)
         return self.sam_backend.predictor
 
-    def _run_sam2(self, Iq: np.ndarray, P_pos: np.ndarray, P_neg: np.ndarray, bbox: Optional[Tuple[int, int, int, int]] = None):
+    def _run_sam(self, Iq: np.ndarray, P_pos: np.ndarray, P_neg: np.ndarray, bbox: Optional[Tuple[int, int, int, int]] = None):
         return self.sam_backend.predict_with_points(Iq, P_pos, P_neg, bbox=bbox)
 
     def _run_sam_box(self, Iq: np.ndarray, bbox: Tuple[int, int, int, int]):

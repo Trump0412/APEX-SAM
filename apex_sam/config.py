@@ -128,7 +128,6 @@ class ApexConfig:
         self.r = 5
         self.k = 2
         self.seed = 2021
-        self.sam2_checkpoint = self.sam_checkpoint
         self.dinov3_model_name = "dinov3_vitl16"
         self.sam_input_size = self.force_input_size
         self.dino_size = 512

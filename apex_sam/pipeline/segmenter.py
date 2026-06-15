@@ -12,7 +12,7 @@ from scipy.ndimage import binary_fill_holes, distance_transform_edt
 from skimage import measure
 
 from apex_sam.config import ApexConfig
-from apex_sam.hmf.fusion import BranchPrediction, VanillaBBoxPointHMF
+from apex_sam.hmf.fusion import BBoxPointHMF, BranchPrediction
 from apex_sam.premask.chamfer import ChamferMixin
 from apex_sam.premask.edges import EdgeMixin
 from apex_sam.premask.structure import StructureMixin
@@ -41,9 +41,9 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         self.dino_model = self._load_dinov3()
 
         # Load SAM
-        self.sam2_model = self._load_sam2()
+        self.sam_model = self._load_sam()
 
-        self.hmf = VanillaBBoxPointHMF(
+        self.hmf = BBoxPointHMF(
             temperature=float(self.config.hmf_temperature),
             clip_eps=float(self.config.hmf_clip_eps),
         )
@@ -58,7 +58,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
             torch.cuda.manual_seed_all(seed)
 
     def _preprocess_image(self, img: np.ndarray) -> np.ndarray:
-        """A1. Image preprocessing."""
+        """Normalize a 2D medical image for prompt mining and SAM inference."""
         img = img.astype(np.float32)
 
         # Convert multi-channel input to grayscale
@@ -181,8 +181,8 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
                 cv2.imwrite(p_bbox, bbox_overlay)
                 debug_dict["viz_paths"].append(p_bbox)
 
-        log("  [B1] SAM inference...")
-        masks, sam_scores, F_sam = self._run_sam2(Iq_norm, P_pos, P_neg, bbox=bbox)
+        log("  SAM inference...")
+        masks, sam_scores, F_sam = self._run_sam(Iq_norm, P_pos, P_neg, bbox=bbox)
         debug_dict["masks_initial"] = masks
         debug_dict["sam_scores"] = sam_scores
 
@@ -244,7 +244,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         bbox = self._compute_fixed_bbox(M_pre, P_pos, Iq_norm.shape, self.config.bbox_size)
         debug_dict["bbox"] = bbox
 
-        point_masks, point_scores, _ = self._run_sam2(Iq_norm, P_pos, P_neg, bbox=None)
+        point_masks, point_scores, _ = self._run_sam(Iq_norm, P_pos, P_neg, bbox=None)
         point_prob, point_conf = self._pick_best_mask_prob(point_masks, point_scores, (h, w))
 
         box_masks, box_scores, _ = self._run_sam_box(Iq_norm, bbox)
@@ -372,7 +372,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         if viz_task2:
             self._ensure_dir(viz_task2)
 
-        log('  [A1] Preprocess images...')
+        log("  Preprocess images...")
         Is_norm = self._preprocess_image(I_s)
         Iq_norm = self._preprocess_image(I_q)
         debug_dict['Is_norm'] = Is_norm
@@ -383,7 +383,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
             Is_norm = cv2.resize(Is_norm.astype(np.float32), (tgt_w, tgt_h), interpolation=cv2.INTER_LINEAR)
             M_s = cv2.resize((M_s > 0.5).astype(np.uint8), (tgt_w, tgt_h), interpolation=cv2.INTER_NEAREST)
 
-        log('  [A2] Compute support template...')
+        log("  Compute support template...")
         M_s = (M_s > 0.5).astype(np.uint8)
         M_s = self._keep_largest_component(M_s)
         support_fill = binary_fill_holes(M_s > 0).astype(np.uint8)
@@ -397,12 +397,12 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         debug_dict['support_desc'] = support_desc
         debug_dict['support_has_hole'] = bool(support_has_hole)
 
-        log('  [A3] Compute query edge map...')
+        log("  Compute query edge map...")
         Eq, Egrad = self._compute_edge_map(Iq_norm)
         debug_dict['Eq'] = Eq
         debug_dict['Egrad'] = Egrad
 
-        log('  [A3.5] Compute DINO similarity...')
+        log("  Compute DINO similarity...")
         Is_dino = Is_norm
         Iq_dino = Iq_norm
         if bool(self.config.enable_dino_freq_fusion):
@@ -416,7 +416,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         debug_dict['dino_region_mask'] = dino_region
         debug_dict['dino_region_info'] = dino_info
 
-        log('  [A4] Generate pre-mask...')
+        log("  Generate pre-mask...")
         premask_out = self._generate_premask_chamfer(
             Iq_norm=Iq_norm,
             Is_norm=Is_norm,
@@ -431,7 +431,7 @@ class ApexSegmenter(DinoFeatureMixin, EdgeMixin, StructureMixin, ChamferMixin, V
         debug_dict.update(premask_out.get('match_debug', {}))
         debug_dict['M_pre'] = M_pre
 
-        log('  [A7] Compute query-native shape priors...')
+        log("  Compute query-native shape priors...")
         Dpre = self._compute_signed_distance(M_pre)
         Pin_pre, Pband_pre = self._compute_shape_priors(Dpre)
         debug_dict['Dpre'] = Dpre

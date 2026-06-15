@@ -26,7 +26,6 @@
       --line: #d9e0ea;
       --navy: #16324f;
       --teal: #0f766e;
-      --gold: #b77720;
       --red: #b5403d;
       --code: #111827;
     }
@@ -161,11 +160,6 @@
       font-family: "Google Sans", "Noto Sans", sans-serif;
       font-weight: 700;
     }
-    .button.is-paper {
-      border-color: rgba(255,255,255,0.42);
-      background: #ffffff;
-      color: var(--navy);
-    }
     .button.is-ghost {
       border-color: rgba(255,255,255,0.36);
       background: rgba(255,255,255,0.12);
@@ -176,37 +170,8 @@
       color: #ffffff;
     }
 
-    .hero-stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1px;
-      margin-top: 2.2rem;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.26);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.26);
-    }
-    .hero-stat {
-      padding: 1rem;
-      background: rgba(8, 18, 31, 0.38);
-      text-align: center;
-    }
-    .hero-stat strong {
-      display: block;
-      color: #ffffff;
-      font-family: "Google Sans", "Noto Sans", sans-serif;
-      font-size: 1.55rem;
-      line-height: 1.2;
-    }
-    .hero-stat span {
-      color: #dbe7f2;
-      font-size: 0.86rem;
-    }
-
     .paper-card,
-    .method-card,
-    .metric-box,
-    .release-card {
+    .method-card {
       height: 100%;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -234,24 +199,6 @@
       line-height: 1.65;
     }
 
-    .metric-box {
-      padding: 1.25rem;
-      text-align: center;
-    }
-    .metric-value {
-      margin: 0;
-      color: var(--teal);
-      font-family: "Google Sans", "Noto Sans", sans-serif;
-      font-size: 1.75rem;
-      font-weight: 700;
-    }
-    .metric-label {
-      margin-top: 0.3rem;
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.45;
-    }
-
     .method-card {
       padding: 1.25rem;
       transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -276,26 +223,17 @@
     .tag-qar { background: var(--navy); }
     .tag-apm { background: var(--teal); }
     .tag-hmf { background: var(--red); }
-    .method-card h4,
-    .release-card h4 {
+    .method-card h4 {
       margin-bottom: 0.45rem;
       font-family: "Google Sans", "Noto Sans", sans-serif;
       font-size: 1rem;
       font-weight: 700;
     }
-    .method-card p,
-    .release-card p {
+    .method-card p {
       color: var(--muted);
       font-size: 0.92rem;
       line-height: 1.68;
     }
-
-    .release-card {
-      padding: 1.2rem;
-      border-top: 4px solid var(--teal);
-    }
-    .release-card.is-limited { border-top-color: var(--gold); }
-    .release-card.is-private { border-top-color: var(--red); }
 
     .table-container {
       margin-top: 0.9rem;
@@ -381,13 +319,11 @@
     @media screen and (max-width: 768px) {
       .publication-header .hero-body { padding-top: 2.6rem; }
       .section { padding: 3rem 1rem; }
-      .hero-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .publication-links .button { width: calc(50% - 0.4rem); }
     }
 
     @media screen and (max-width: 480px) {
       .publication-links .button { width: 100%; }
-      .hero-stats { grid-template-columns: 1fr; }
       .status-row { justify-content: flex-start; }
       .publication-header .has-text-centered { text-align: left !important; }
     }
@@ -412,7 +348,6 @@
         <a class="navbar-item" href="#abstract">Abstract</a>
         <a class="navbar-item" href="#method">Method</a>
         <a class="navbar-item" href="#results">Results</a>
-        <a class="navbar-item" href="#release">Code Release</a>
         <a class="navbar-item" href="#bibtex">Citation</a>
       </div>
       <div class="navbar-end">
@@ -454,10 +389,6 @@
         </p>
 
         <div class="publication-links">
-          <a href="#" class="button is-paper" title="Paper link will be added when available">
-            <span class="icon"><i class="fas fa-file-pdf"></i></span>
-            <span>Paper Coming Soon</span>
-          </a>
           <a href="https://github.com/Trump0412/APEX-SAM" class="button is-ghost" target="_blank" rel="noreferrer">
             <span class="icon"><i class="fab fa-github"></i></span>
             <span>Code</span>
@@ -470,13 +401,6 @@
             <span class="icon"><i class="fas fa-quote-right"></i></span>
             <span>Citation</span>
           </a>
-        </div>
-
-        <div class="hero-stats" aria-label="APEX-SAM headline metrics">
-          <div class="hero-stat"><strong>95.81</strong><span>Dice on Abd-MRI</span></div>
-          <div class="hero-stat"><strong>91.91</strong><span>Dice on Abd-CT</span></div>
-          <div class="hero-stat"><strong>83.13</strong><span>Dice on Card-MRI</span></div>
-          <div class="hero-stat"><strong>0</strong><span>Parameter updates</span></div>
         </div>
       </div>
     </div>
@@ -509,12 +433,6 @@
       </p>
     </div>
 
-    <div class="columns is-multiline" style="margin-top:1.5rem;">
-      <div class="column is-3"><div class="metric-box"><p class="metric-value">MICCAI</p><p class="metric-label">MICCAI 2026</p></div></div>
-      <div class="column is-3"><div class="metric-box"><p class="metric-value">3</p><p class="metric-label">Cross-domain benchmarks</p></div></div>
-      <div class="column is-3"><div class="metric-box"><p class="metric-value">5-shot</p><p class="metric-label">Support-driven protocol</p></div></div>
-      <div class="column is-3"><div class="metric-box"><p class="metric-value">0</p><p class="metric-label">Training updates at test time</p></div></div>
-    </div>
   </div>
 </section>
 
@@ -522,7 +440,7 @@
   <div class="container is-max-desktop">
     <div class="section-intro has-text-centered">
       <p class="section-kicker">Method</p>
-      <h2 class="title is-3 section-title">Three Modules, One Inference Pipeline</h2>
+      <h2 class="title is-3 section-title">Three Components, One Inference Pipeline</h2>
       <p class="section-copy">APEX-SAM improves support selection, prompt construction, and prompt-branch fusion while keeping the full pipeline training-free.</p>
     </div>
     <div class="columns">
@@ -537,7 +455,7 @@
         <div class="method-card">
           <span class="tag-label tag-apm">APM</span>
           <h4>Anatomy-Aware Prompt Mining</h4>
-          <p>Aligns support and query anatomy under cross-modality appearance shifts, then samples robust positive and negative prompts from morphological priors.</p>
+          <p>Aligns support and query anatomy under cross-modality appearance shifts, then samples positive and negative prompts from morphological priors.</p>
         </div>
       </div>
       <div class="column is-4">
@@ -653,7 +571,7 @@
     <div class="section-intro has-text-centered">
       <p class="section-kicker">Ablation</p>
       <h2 class="title is-3 section-title">Component Analysis</h2>
-      <p class="section-copy">Each module contributes a measurable improvement, and the thresholded memory update further strengthens the full pipeline.</p>
+      <p class="section-copy">Each component contributes a measurable improvement, and the thresholded memory update further strengthens the full pipeline.</p>
     </div>
 
     <div class="columns">
@@ -689,41 +607,11 @@
   </div>
 </section>
 
-<section class="section section-soft" id="release">
-  <div class="container is-max-desktop">
-    <div class="section-intro has-text-centered">
-      <p class="section-kicker">Open-Source Release</p>
-      <h2 class="title is-3 section-title">What Is Included</h2>
-      <p class="section-copy">The repository is released as a practical, privacy-aware implementation package. Medical data and private expert database contents are not included.</p>
-    </div>
-    <div class="columns">
-      <div class="column is-4">
-        <div class="release-card">
-          <h4>Released</h4>
-          <p>APM, vanilla HMF, preprocessing, single-case inference, dataset evaluation, metrics, tests, and example shell scripts are included for reproducible development.</p>
-        </div>
-      </div>
-      <div class="column is-4">
-        <div class="release-card is-limited">
-          <h4>Configurable</h4>
-          <p>Users provide their own SAM-compatible checkpoint, DINO/SigLIP resources, datasets, and externally selected support items under the documented folder layout.</p>
-        </div>
-      </div>
-      <div class="column is-4">
-        <div class="release-card is-private">
-          <h4>Placeholder</h4>
-          <p>Module-1 QAR files are kept as placeholders because private expert database assets and medical data cannot be redistributed with the public repository.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="section" id="bibtex">
   <div class="container is-max-desktop">
     <div class="section-intro has-text-centered">
       <p class="section-kicker">Citation</p>
-      <h2 class="title is-3 section-title">MICCAI-Style Citation</h2>
+      <h2 class="title is-3 section-title">Citation</h2>
       <p class="section-copy">Proceedings metadata such as LNCS volume, page range, DOI, and final paper URL will be added after publication.</p>
     </div>
     <div class="paper-card">
@@ -751,9 +639,6 @@
     <p>
       APEX-SAM | MICCAI 2026 | China University of Geosciences (Wuhan) |
       <a href="https://github.com/Trump0412/APEX-SAM" target="_blank" rel="noreferrer">GitHub</a>
-    </p>
-    <p>
-      Built as a static project page for GitHub Pages. Page structure follows the academic project-page tradition popularized by Nerfies-style sites.
     </p>
   </div>
 </footer>

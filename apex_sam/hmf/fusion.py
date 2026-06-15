@@ -12,8 +12,8 @@ class BranchPrediction:
     confidence: float
 
 
-class VanillaBBoxPointHMF:
-    """Vanilla HMF implementation for public release: bbox + point branches only."""
+class BBoxPointHMF:
+    """HMF implementation for bbox and point prompt branches."""
 
     def __init__(self, temperature: float = 1.0, clip_eps: float = 1e-4):
         self.temperature = max(1e-3, float(temperature))
@@ -28,7 +28,7 @@ class VanillaBBoxPointHMF:
 
     def fuse(self, branches: list[BranchPrediction]) -> tuple[np.ndarray, dict]:
         if len(branches) != 2:
-            raise RuntimeError("VanillaBBoxPointHMF expects exactly two branches: point and bbox.")
+            raise RuntimeError("BBoxPointHMF expects exactly two branches: point and bbox.")
 
         names = [branch.name for branch in branches]
         probs = [np.asarray(branch.prob, dtype=np.float32) for branch in branches]

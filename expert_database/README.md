@@ -1,7 +1,6 @@
-# Expert Database Placeholder
+# Expert Database
 
-This folder is reserved for the external expert database used by Module-1 (QAR).
+This folder is reserved for optional user-managed support assets.
 
-In this open-source release, Module-1 code is intentionally omitted.
-You can place your own database assets here and run external matching,
-then pass one selected support pair to Module-2/3 inference.
+The public inference path accepts a selected support item directly through
+`--support-item-dir`, `--support-image-path`, or `--support-mask-path`.

@@ -17,8 +17,9 @@
 </p>
 
 <p align="center">
-  Zhihao Mao, Bangpu Chen, Qi Lei, Jiaqi Tan, Kun Sun<sup>*</sup><br>
+  Zhihao Mao<sup>&dagger;</sup>, Bangpu Chen<sup>&dagger;</sup>, Qi Lei, Jiaqi Tan, Kun Sun<sup>*</sup><br>
   China University of Geosciences (Wuhan)<br>
+  <sup>&dagger;</sup>Equal contribution<br>
   <sup>*</sup>Corresponding author
 </p>
 

@@ -17,10 +17,10 @@
 </p>
 
 <p align="center">
-  Zhihao Mao<sup>&dagger;</sup>, Bangpu Chen<sup>&dagger;</sup>, Qi Lei, Jiaqi Tan, Kun Sun<sup>*</sup><br>
+  Zhihao Mao<sup>*</sup>, Bangpu Chen<sup>*</sup>, Qi Lei, Jiaqi Tan, Kun Sun<sup>&dagger;</sup><br>
   China University of Geosciences (Wuhan)<br>
-  <sup>&dagger;</sup>Equal contribution<br>
-  <sup>*</sup>Corresponding author
+  <sup>*</sup>Equal contribution<br>
+  <sup>&dagger;</sup>Corresponding author
 </p>
 
 <p align="center">
